@@ -485,7 +485,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 controller: _searchController,
                 onChanged: (query) {
                   setState(() {
-                    _hasUniSearchText = query.isNotEmpty;
+                    _hasDeptSearchText = query.isNotEmpty;
                     if (query.isEmpty) {
                       _filteredDepartments = _departments;
                     } else {
@@ -659,7 +659,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 controller: _searchController,
                 onChanged: (query) {
                   setState(() {
-                    _hasUniSearchText = query.isNotEmpty;
+                    _hasClassSearchText = query.isNotEmpty;
                     if (query.isEmpty) {
                       _filteredClasses = _classes;
                     } else {
@@ -673,7 +673,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 decoration: InputDecoration(
                   hintText: 'Sınıf ara...',
                   prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _hasUniSearchText
+                  suffixIcon: _hasClassSearchText
                       ? IconButton(
                           icon: const Icon(Icons.clear),
                           onPressed: () {
