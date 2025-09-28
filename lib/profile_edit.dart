@@ -17,24 +17,45 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _bioController = TextEditingController();
+  final TextEditingController _departmentController = TextEditingController();
+  final TextEditingController _classController = TextEditingController();
+  final TextEditingController _interestTagsController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   
   String _selectedUniversity = '';
+  String _selectedDepartment = '';
+  String _selectedClass = '';
+  List<String> _interestTags = [];
+  Map<String, String> _activeHours = {'start': '19:00', 'end': '22:00'};
   String? _profileImageUrl;
   File? _selectedImage;
   bool _isLoading = false;
   bool _isSaving = false;
+
   List<String> _universities = [];
+  List<String> _departments = [];
+  List<String> _classes = [];
+  
   List<String> _filteredUniversities = [];
+  List<String> _filteredDepartments = [];
+  List<String> _filteredClasses = [];
+
   bool _isLoadingUniversities = false;
+  bool _isLoadingDepartments = false;
+  bool _isLoadingClasses = false;
   final TextEditingController _searchController = TextEditingController();
-  bool _hasSearchText = false;
+  bool _hasUniSearchText = false;
+  bool _hasDeptSearchText = false;
+  bool _hasClassSearchText = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _loadUniversities();
+    _loadDepartments();
+    _loadClasses();
   }
 
   Future<void> _loadUniversities() async {
@@ -74,6 +95,78 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       }
     }
   }
+  Future<void> _loadDepartments() async {
+    setState(() {
+      _isLoadingDepartments = true;
+    });
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('departments')
+          .orderBy('index')
+          .get();
+
+      final departments = snapshot.docs
+          .map((doc) => doc.data()['name'] as String)
+          .toList();
+
+          departments.sort((a, b) => a.compareTo(b));
+
+      setState(() {
+        _departments = departments;
+        _filteredDepartments = departments;
+        _isLoadingDepartments = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingDepartments = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Bölümler yüklenirken hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+  Future<void> _loadClasses() async {
+    setState(() {
+      _isLoadingClasses = true;
+    });
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('classes')
+          .orderBy('index')
+          .get();
+
+      final classes = snapshot.docs
+          .map((doc) => doc.data()['name'] as String)
+          .toList();
+
+      classes.sort((a, b) => a.compareTo(b));
+
+      setState(() {
+        _classes = classes;
+        _filteredClasses = classes;
+        _isLoadingClasses = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingClasses = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sınıflar yüklenirken hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   Future<void> _loadUserData() async {
     setState(() {
@@ -94,7 +187,17 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           _lastNameController.text = data['lastName'] ?? '';
           _ageController.text = data['age']?.toString() ?? '';
           _selectedUniversity = data['university'] ?? '';
+          _selectedDepartment = data['department'] ?? '';
+          _selectedClass = data['class'] ?? '';
+          _departmentController.text = _selectedDepartment;
+          _classController.text = _selectedClass;
+          _bioController.text = data['bio'] ?? '';
+          _interestTags = List<String>.from(data['interestTags'] ?? []);
+          _activeHours = Map<String, String>.from(data['activeHours'] ?? {'start': '19:00', 'end': '22:00'});
           _profileImageUrl = data['profileImageUrl'];
+          
+          // Update interest tags controller
+          _interestTagsController.text = _interestTags.join(', ');
         }
       }
     } catch (e) {
@@ -117,7 +220,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   void _filterUniversities(String query) {
     setState(() {
-      _hasSearchText = query.isNotEmpty;
+      _hasUniSearchText = query.isNotEmpty;
       if (query.isEmpty) {
         _filteredUniversities = _universities;
       } else {
@@ -128,8 +231,29 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       }
     });
   }
+  void _filterDepartments(String query) {
+    setState(() {
+      _hasDeptSearchText = query.isNotEmpty;
+      _filteredDepartments = query.isEmpty
+          ? _departments
+          : _departments
+              .where((d) => d.toLowerCase().contains(query.toLowerCase()))
+              .toList();
+    });
+  }
+  void _filterClasses(String query) {
+    setState(() {
+      _hasClassSearchText = query.isNotEmpty;
+      _filteredClasses = query.isEmpty
+         ? _classes
+          : _classes
+              .where((c) => c.toLowerCase().contains(query.toLowerCase()))
+              .toList();
+    });
+  }
 
   void _showUniversityBottomSheet() {
+
     // Arama kutusunu temizle
     _searchController.clear();
     _filterUniversities('');
@@ -138,8 +262,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
+      builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -188,8 +311,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               child: TextField(
                 controller: _searchController,
                 onChanged: (query) {
-                  setModalState(() {
-                    _hasSearchText = query.isNotEmpty;
+                  setState(() {
+                    _hasUniSearchText = query.isNotEmpty;
                     if (query.isEmpty) {
                       _filteredUniversities = _universities;
                     } else {
@@ -203,13 +326,13 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 decoration: InputDecoration(
                   hintText: 'Üniversite ara...',
                   prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _hasSearchText
+                  suffixIcon: _hasUniSearchText
                       ? IconButton(
                           icon: const Icon(Icons.clear),
                           onPressed: () {
                             _searchController.clear();
-                            setModalState(() {
-                              _hasSearchText = false;
+                            setState(() {
+                              _hasUniSearchText = false;
                               _filteredUniversities = _universities;
                             });
                           },
@@ -301,11 +424,357 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+  void _showDepartmentBottomSheet() {
+    _searchController.clear();
+    _filterDepartments('');
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Row(
+                children: [
+                  const Text(
+                    'Bölüm Seçin',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2D3748),
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (query) {
+                  setState(() {
+                    _hasUniSearchText = query.isNotEmpty;
+                    if (query.isEmpty) {
+                      _filteredDepartments = _departments;
+                    } else {
+                      _filteredDepartments = _departments
+                          .where((department) =>
+                              department.toLowerCase().contains(query.toLowerCase()))
+                          .toList();
+                    }
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: 'Bölüm ara...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _hasDeptSearchText
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              _hasDeptSearchText = false;
+                              _filteredDepartments = _departments;
+                            });
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF2563EB)),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+            ),
+            // Universities list
+            Expanded(
+              child: _isLoadingDepartments
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+                      ),
+                    )
+                  : _filteredDepartments.isEmpty
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_off,
+                                size: 64,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Bölüm bulunamadı',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Farklı bir arama terimi deneyin',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: _filteredDepartments.length,
+                          itemBuilder: (context, index) {
+                            final department = _filteredDepartments[index];
+                            final isSelected = department == _selectedDepartment;
+                        
+                        return ListTile(
+                          title: Text(
+                            department,
+                            style: TextStyle(
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF2D3748),
+                            ),
+                          ),
+                          trailing: isSelected
+                              ? const Icon(
+                                  Icons.check,
+                                  color: Color(0xFF2563EB),
+                                )
+                              : null,
+                          onTap: () {
+                            setState(() {
+                              _selectedDepartment = department;
+                            });
+                            _searchController.clear();
+                            _filterDepartments('');
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ],
         ),
       ),
     );
   }
-
+  void _showClassBottomSheet() {
+    // Arama kutusunu temizle
+    _searchController.clear();
+    _filterClasses('');
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Row(
+                children: [
+                  const Text(
+                    'Sınıf Seçin',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2D3748),
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (query) {
+                  setState(() {
+                    _hasUniSearchText = query.isNotEmpty;
+                    if (query.isEmpty) {
+                      _filteredClasses = _classes;
+                    } else {
+                      _filteredClasses = _classes
+                          .where((classes) =>
+                              classes.toLowerCase().contains(query.toLowerCase()))
+                          .toList();
+                    }
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: 'Sınıf ara...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _hasUniSearchText
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              _hasClassSearchText = false;
+                              _filteredClasses = _classes;
+                            });
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF2563EB)),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+            ),
+            // Universities list
+            Expanded(
+              child: _isLoadingClasses
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+                      ),
+                    )
+                  : _filteredClasses.isEmpty
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_off,
+                                size: 64,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Sınıf bulunamadı',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Farklı bir arama terimi deneyin',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: _filteredClasses.length,
+                          itemBuilder: (context, index) {
+                            final classes = _filteredClasses[index];
+                            final isSelected = classes == _selectedClass;
+                        
+                        return ListTile(
+                          title: Text(
+                            classes,
+                            style: TextStyle(
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF2D3748),
+                            ),
+                          ),
+                          trailing: isSelected
+                              ? const Icon(
+                                  Icons.check,
+                                  color: Color(0xFF2563EB),
+                                )
+                              : null,
+                          onTap: () {
+                            setState(() {
+                              _selectedClass = classes;
+                            });
+                            _searchController.clear();
+                            _filterClasses('');
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
   Future<void> _pickImage() async {
     try {
       final XFile? image = await _picker.pickImage(
@@ -393,6 +862,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           'lastName': _lastNameController.text.trim(),
           'age': int.tryParse(_ageController.text.trim()) ?? 0,
           'university': _selectedUniversity,
+          'department': _selectedDepartment,
+          'class': _selectedClass,
+          'bio': _bioController.text.trim(),
+          'interestTags': _interestTags,
+          'activeHours': _activeHours,
           'email': user.email,
           'profileImageUrl': imageUrl,
           'updatedAt': FieldValue.serverTimestamp(),
@@ -431,6 +905,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _ageController.dispose();
+    _bioController.dispose();
+    _departmentController.dispose();
+    _classController.dispose();
+    _interestTagsController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -658,6 +1136,203 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         ),
                       ),
                     
+                    const SizedBox(height: 20),
+                    
+                    // Department selection
+                    const Text(
+                      'Bölüm',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: _showDepartmentBottomSheet,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.white,
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.book_outlined,
+                              color: Color(0xFF9CA3AF),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _selectedDepartment.isEmpty 
+                                    ? 'Bölümünüzü seçiniz'
+                                    : _selectedDepartment,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: _selectedDepartment.isEmpty 
+                                      ? const Color(0xFF9CA3AF)
+                                      : const Color(0xFF2D3748),
+                                ),
+                              ),
+                            ),
+                            const Icon(
+                              Icons.keyboard_arrow_down,
+                              color: Color(0xFF9CA3AF),
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 20),
+                    
+                    // Class selection
+                    const Text(
+                      'Sınıf',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: _showClassBottomSheet,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.white,
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.grade_outlined,
+                              color: Color(0xFF9CA3AF),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _selectedClass.isEmpty 
+                                    ? 'Sınıfınızı seçiniz'
+                                    : _selectedClass,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: _selectedClass.isEmpty 
+                                      ? const Color(0xFF9CA3AF)
+                                      : const Color(0xFF2D3748),
+                                ),
+                              ),
+                            ),
+                            const Icon(
+                              Icons.keyboard_arrow_down,
+                              color: Color(0xFF9CA3AF),
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 20),
+                    
+                    // Bio field
+                    const Text(
+                      'Kısa Bio',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildFormField(
+                      controller: _bioController,
+                      label: '',
+                      hint: 'Kendinizi kısaca tanıtın (140-200 karakter)',
+                      icon: Icons.edit_note_outlined,
+                      maxLines: 3,
+                      maxLength: 200,
+                      validator: (value) {
+                        if (value != null && value.length > 200) {
+                          return 'Bio 200 karakterden uzun olamaz';
+                        }
+                        return null;
+                      },
+                    ),
+                    
+                    const SizedBox(height: 20),
+                    
+                    // Interest Tags
+                    const Text(
+                      'İlgi Alanları',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildFormField(
+                      controller: _interestTagsController,
+                      label: '',
+                      hint: 'İlgi alanlarınızı virgülle ayırın (örn: koşu, sinema, müzik)',
+                      icon: Icons.tag_outlined,
+                      onChanged: (value) {
+                        if (value.isNotEmpty) {
+                          _interestTags = value.split(',').map((tag) => tag.trim()).where((tag) => tag.isNotEmpty).toList();
+                        } else {
+                          _interestTags = [];
+                        }
+                      },
+                    ),
+                    
+                    const SizedBox(height: 20),
+                    
+                    // Active Hours
+                    const Text(
+                      'Aktif Zamanlar',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildTimeSelector(
+                            'Başlangıç',
+                            _activeHours['start']!,
+                            (time) {
+                              setState(() {
+                                _activeHours['start'] = time;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: _buildTimeSelector(
+                            'Bitiş',
+                            _activeHours['end']!,
+                            (time) {
+                              setState(() {
+                                _activeHours['end'] = time;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    
                     const SizedBox(height: 40),
                     
                     // Save button
@@ -707,19 +1382,25 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     required IconData icon,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
+    bool readOnly = false,
+    int maxLines = 1,
+    int? maxLength,
+    void Function(String)? onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D3748),
+        if (label.isNotEmpty) ...[
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2D3748),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
+          const SizedBox(height: 8),
+        ],
         Container(
           decoration: BoxDecoration(
             border: Border.all(color: const Color(0xFFE5E7EB)),
@@ -729,6 +1410,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             controller: controller,
             keyboardType: keyboardType,
             validator: validator,
+            readOnly: readOnly,
+            maxLines: maxLines,
+            maxLength: maxLength,
+            onChanged: onChanged,
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: const TextStyle(
@@ -748,4 +1433,61 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       ],
     );
   }
+
+  Widget _buildTimeSelector(String label, String time, Function(String) onTimeChanged) {
+    return GestureDetector(
+      onTap: () async {
+        final TimeOfDay? picked = await showTimePicker(
+          context: context,
+          // ignore: unnecessary_brace_in_string_interps
+          initialTime: TimeOfDay.fromDateTime(DateTime.parse('2023-01-01 ${time}:00')),
+        );
+        if (picked != null) {
+          final formattedTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+          onTimeChanged(formattedTime);
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF6B7280),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(
+                  Icons.access_time,
+                  color: Color(0xFF9CA3AF),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  time,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF2D3748),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 }
