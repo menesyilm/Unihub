@@ -85,17 +85,24 @@ class _ProfilePageState extends State<ProfilePage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header with background
+              // Header with background (cover image if available)
               Container(
                 width: double.infinity,
                 height: 230,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                  ),
-                ),
+                decoration: userData != null && userData!['coverImageUrl'] != null
+                    ? BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage(userData!['coverImageUrl']),
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                        ),
+                      ),
                 child: Stack(
                   children: [
                     // Background pattern

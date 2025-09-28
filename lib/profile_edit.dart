@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloudinary_public/cloudinary_public.dart';
+import 'secrets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
@@ -29,7 +30,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   List<String> _interestTags = [];
   Map<String, String> _activeHours = {'start': '19:00', 'end': '22:00'};
   String? _profileImageUrl;
-  File? _selectedImage;
+  String? _coverImageUrl;
+  File? _selectedProfilImage;
+  File? _selectedCoverImage;
   bool _isLoading = false;
   bool _isSaving = false;
 
@@ -195,6 +198,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           _interestTags = List<String>.from(data['interestTags'] ?? []);
           _activeHours = Map<String, String>.from(data['activeHours'] ?? {'start': '19:00', 'end': '22:00'});
           _profileImageUrl = data['profileImageUrl'];
+          _coverImageUrl = data['coverImageUrl'];
           
           // Update interest tags controller
           _interestTagsController.text = _interestTags.join(', ');
@@ -786,7 +790,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       
       if (image != null) {
         setState(() {
-          _selectedImage = File(image.path);
+          _selectedProfilImage = File(image.path);
         });
       }
     } catch (e) {
@@ -801,21 +805,81 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     }
   }
 
-  Future<String?> _uploadImage() async {
-    if (_selectedImage == null) return _profileImageUrl;
-    
+  Future<void> _pickCoverImage() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return null;
-      
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('profile_images')
-          .child('${user.uid}.jpg');
-      
-      await ref.putFile(_selectedImage!);
-      final downloadUrl = await ref.getDownloadURL();
-      return downloadUrl;
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200,
+        maxHeight: 800,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedCoverImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kapak fotoğrafı seçilirken hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<String?> _uploadImage() async {
+    if (_selectedProfilImage == null && _selectedCoverImage == null) return _profileImageUrl;
+
+    // Read Cloudinary credentials from lib/secrets.dart (update that file with your real values)
+    final cloudName = cloudinaryCloudName;
+    final uploadPreset = cloudinaryUploadPreset;
+
+    if (cloudName == 'your_cloud_name' || uploadPreset == 'your_upload_preset') {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cloudinary yapılandırılmadı. `cloudName` ve `uploadPreset` bilgilerini ayarlayın.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return null;
+    }
+
+    try {
+      final cloudinary = CloudinaryPublic(cloudName, uploadPreset, cache: false);
+
+      // If profile image selected, upload it first
+      if (_selectedProfilImage != null) {
+        final resProfile = await cloudinary.uploadFile(
+          CloudinaryFile.fromFile(_selectedProfilImage!.path, resourceType: CloudinaryResourceType.Image),
+        );
+        _profileImageUrl = resProfile.secureUrl;
+      }
+
+      // If cover image selected, upload it
+      if (_selectedCoverImage != null) {
+        final resCover = await cloudinary.uploadFile(
+          CloudinaryFile.fromFile(_selectedCoverImage!.path, resourceType: CloudinaryResourceType.Image),
+        );
+        _coverImageUrl = resCover.secureUrl;
+      }
+
+      return _profileImageUrl;
+    } on CloudinaryException catch (err) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Cloudinary hatası: ${err.message} (${err.request})'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return null;
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -851,9 +915,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // Fotoğrafı yükle
-        final imageUrl = await _uploadImage();
-        
+        // Fotoğrafı yükle (profile ve cover varsa)
+        await _uploadImage();
+
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -868,7 +932,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           'interestTags': _interestTags,
           'activeHours': _activeHours,
           'email': user.email,
-          'profileImageUrl': imageUrl,
+          'profileImageUrl': _profileImageUrl,
+          'coverImageUrl': _coverImageUrl,
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
 
@@ -936,88 +1001,144 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header with Profile Photo
+                    // Header with Cover Image and Profile Photo
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(0),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xFF2563EB),
-                            Color(0xFF1D4ED8),
-                          ],
-                        ),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: Column(
                         children: [
-                          // Profile Photo Section
-                          GestureDetector(
-                            onTap: _pickImage,
-                            child: Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white.withValues(alpha: 0.2),
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 3,
+                          // Cover image area
+                          Stack(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                height: 160,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF2563EB),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: _selectedCoverImage != null
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(15),
+                                        child: Image.file(
+                                          _selectedCoverImage!,
+                                          width: double.infinity,
+                                          height: 160,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : (_coverImageUrl != null
+                                        ? ClipRRect(
+                                            borderRadius: BorderRadius.circular(15),
+                                            child: Image.network(
+                                              _coverImageUrl!,
+                                              width: double.infinity,
+                                              height: 160,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) => Container(color: const Color(0xFF2563EB)),
+                                            ),
+                                          )
+                                        : Container()),
+                              ),
+                              // Avatar positioned overlapping cover
+                              Positioned(
+                                left: 16,
+                                bottom: -40,
+                                child: GestureDetector(
+                                  onTap: _pickImage,
+                                  child: CircleAvatar(
+                                    radius: 56,
+                                    backgroundColor: Colors.white,
+                                    child: _selectedProfilImage != null
+                                        ? ClipOval(
+                                            child: Image.file(
+                                              _selectedProfilImage!,
+                                              width: 104,
+                                              height: 104,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          )
+                                        : _profileImageUrl != null
+                                            ? ClipOval(
+                                                child: Image.network(
+                                                  _profileImageUrl!,
+                                                  width: 104,
+                                                  height: 104,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.person_outline, size: 50),
+                                                ),
+                                              )
+                                            : const Icon(Icons.person_outline, size: 50),
+                                  ),
                                 ),
                               ),
-                              child: _selectedImage != null
-                                  ? ClipOval(
-                                      child: Image.file(
-                                        _selectedImage!,
-                                        width: 100,
-                                        height: 100,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    )
-                                  : _profileImageUrl != null
-                                      ? ClipOval(
-                                          child: Image.network(
-                                            _profileImageUrl!,
-                                            width: 100,
-                                            height: 100,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) {
-                                              return const Icon(
-                                                Icons.person_outline,
-                                                size: 50,
-                                                color: Colors.white,
-                                              );
-                                            },
-                                          ),
-                                        )
-                                      : const Icon(
-                                          Icons.person_outline,
-                                          size: 50,
-                                          color: Colors.white,
-                                        ),
+                            ],
+                          ),
+                          const SizedBox(height: 56),
+                          // Image action buttons
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Cover photo buttons
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: _pickCoverImage,
+                                      icon: const Icon(Icons.photo_camera),
+                                      label: const Text('Kapak Değiştir'),
+                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        setState(() {
+                                          _selectedCoverImage = null;
+                                          _coverImageUrl = null;
+                                        });
+                                        final user = FirebaseAuth.instance.currentUser;
+                                        if (user != null) {
+                                          await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'coverImageUrl': null});
+                                        }
+                                      },
+                                      child: const Text('Kapak Kaldır'),
+                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                // Avatar buttons
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: _pickImage,
+                                      child: const Text('Avatar Değiştir'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        setState(() {
+                                          _selectedProfilImage = null;
+                                          _profileImageUrl = null;
+                                        });
+                                        final user = FirebaseAuth.instance.currentUser;
+                                        if (user != null) {
+                                          await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'profileImageUrl': null});
+                                        }
+                                      },
+                                      child: const Text('Avatar Kaldır'),
+                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          const Text(
-                            'Profil Fotoğrafınızı Değiştirin',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 5),
-                          const Text(
-                            'Fotoğrafa dokunarak seçin',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white70,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
