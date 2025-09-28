@@ -361,16 +361,19 @@ class _RegisterPageState extends State<RegisterPage> {
                                   await credential.user!.sendEmailVerification();
                                   // Oturumu kapat, kullanıcı doğrulama yapmadan erişmemeli
                                   await FirebaseAuth.instance.signOut();
+                                  // ignore: use_build_context_synchronously
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Hesabınızı aktifleştirmek için e-posta adresinize gelen linke tıklayın.')),
                                   );
                                   if (mounted) {
                                     Navigator.pushReplacement(
+                                      // ignore: use_build_context_synchronously
                                       context,
                                       MaterialPageRoute(builder: (context) => const LoginPage()),
                                     );
                                   }
                                 } catch (e) {
+                                  // ignore: use_build_context_synchronously
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('Kayıt sırasında hata oluştu: $e')),
                                   );
