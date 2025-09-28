@@ -167,7 +167,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                         child: TextField(
                           controller: _emailController,
                           decoration: const InputDecoration(
-                            hintText: 'eposta@ornek.com',
+                            hintText: 'ogrenci@universite.edu.tr',
                             hintStyle: TextStyle(
                               color: Color(0xFF9CA3AF),
                               fontSize: 16,

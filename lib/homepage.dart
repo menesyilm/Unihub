@@ -61,10 +61,12 @@ class HomeContent extends StatelessWidget {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('UniHub'),
-        backgroundColor: const Color(0xFF2563EB),
-        foregroundColor: Colors.white,
-        elevation: 0,
+          title: const Text('UniHub'),
+          centerTitle: true,
+          backgroundColor: const Color(0xFF2563EB),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         child: Column(
