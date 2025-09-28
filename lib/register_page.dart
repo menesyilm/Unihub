@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -10,7 +12,8 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _surnameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   bool _isPasswordVisible = false;
@@ -18,10 +21,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _phoneController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
+  _emailController.dispose();
+  _nameController.dispose();
+  _surnameController.dispose();
+  _passwordController.dispose();
+  _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -88,7 +92,78 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 40),
                       
-                      // Email field
+
+                      // Name field
+                      const Text(
+                        'Ad',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF6B7280),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: TextField(
+                          controller: _nameController,
+                          decoration: const InputDecoration(
+                            hintText: 'Adınızı giriniz',
+                            hintStyle: TextStyle(
+                              color: Color(0xFF9CA3AF),
+                              fontSize: 16,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.person_outline,
+                              color: Color(0xFF9CA3AF),
+                              size: 20,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          ),
+                          keyboardType: TextInputType.name,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      // Surname field
+                      const Text(
+                        'Soyad',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF6B7280),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: TextField(
+                          controller: _surnameController,
+                          decoration: const InputDecoration(
+                            hintText: 'Soyadınızı giriniz',
+                            hintStyle: TextStyle(
+                              color: Color(0xFF9CA3AF),
+                              fontSize: 16,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.person_outline,
+                              color: Color(0xFF9CA3AF),
+                              size: 20,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          ),
+                          keyboardType: TextInputType.name,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                                            // Email field
                       const Text(
                         'E-posta',
                         style: TextStyle(
@@ -106,7 +181,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: TextField(
                           controller: _emailController,
                           decoration: const InputDecoration(
-                            hintText: 'eposta@ornek.com',
+                            hintText: 'ogrenci@universite.edu.tr',
                             hintStyle: TextStyle(
                               color: Color(0xFF9CA3AF),
                               fontSize: 16,
@@ -122,46 +197,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           keyboardType: TextInputType.emailAddress,
                         ),
                       ),
-                      
                       const SizedBox(height: 24),
-                      
-                      // Phone field
-                      const Text(
-                        'Telefon No',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF6B7280),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: TextField(
-                          controller: _phoneController,
-                          decoration: const InputDecoration(
-                            hintText: '+90 555 123 45 67',
-                            hintStyle: TextStyle(
-                              color: Color(0xFF9CA3AF),
-                              fontSize: 16,
-                            ),
-                            prefixIcon: Icon(
-                              Icons.phone_outlined,
-                              color: Color(0xFF9CA3AF),
-                              size: 20,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          ),
-                          keyboardType: TextInputType.phone,
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
                       // Password field
                       const Text(
                         'Şifre',
@@ -181,7 +217,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           controller: _passwordController,
                           obscureText: !_isPasswordVisible,
                           decoration: InputDecoration(
-                            hintText: 'şifrenizi giriniz',
+                            hintText: 'Şifrenizi giriniz',
                             hintStyle: const TextStyle(
                               color: Color(0xFF9CA3AF),
                               fontSize: 16,
@@ -208,9 +244,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                       ),
-                      
                       const SizedBox(height: 24),
-                      
                       // Confirm Password field
                       const Text(
                         'Şifre Tekrarı',
@@ -230,7 +264,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           controller: _confirmPasswordController,
                           obscureText: !_isConfirmPasswordVisible,
                           decoration: InputDecoration(
-                            hintText: 'şifrenizi tekrar giriniz',
+                            hintText: 'Şifrenizi tekrar giriniz',
                             hintStyle: const TextStyle(
                               color: Color(0xFF9CA3AF),
                               fontSize: 16,
@@ -257,7 +291,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 50),
                       
                       // Create Account button
@@ -272,9 +306,75 @@ class _RegisterPageState extends State<RegisterPage> {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(8),
-                              onTap: () {
-                                debugPrint('Create Account button tapped');
-                                // Add account creation logic here
+                              onTap: () async {
+                                // Email ile hesap oluşturma ve doğrulama linki gönderme
+                                final email = _emailController.text.trim();
+                                final name = _nameController.text.trim();
+                                final surname = _surnameController.text.trim();
+                                final isStudentMail = RegExp(r'^[^@]+@[^@]+\.edu\.tr$').hasMatch(email);
+                                if (email.isEmpty || name.isEmpty || surname.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Lütfen tüm alanları doldurun.')),
+                                  );
+                                  return;
+                                }
+                                if (!isStudentMail) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Lütfen geçerli bir öğrenci e-posta adresi (.edu.tr) giriniz.')),
+                                  );
+                                  return;
+                                }
+                                final password = _passwordController.text.trim();
+                                final confirm = _confirmPasswordController.text.trim();
+                                if (password.isEmpty || confirm.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Lütfen şifre alanlarını doldurun.')),
+                                  );
+                                  return;
+                                }
+                                if (password != confirm) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Şifreler eşleşmiyor.')),
+                                  );
+                                  return;
+                                }
+                                try {
+                                  // Firebase Auth: kullanıcı oluşturma
+                                  final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                                    email: email,
+                                    password: password,
+                                  );
+                                  // Firestore
+                                  await FirebaseFirestore.instance.collection('users').doc(credential.user!.uid).set({
+                                    'email': email,
+                                    'firstName': name,
+                                    'lastName': surname,
+                                    'profileImageUrl': null,
+                                    'university': null,
+                                    'department': null,
+                                    'class': null,
+                                    'bio': '',
+                                    'joinedRooms': [],
+                                    'isVerified': false,
+                                  });
+                                  // Email doğrulama linki gönder
+                                  await credential.user!.sendEmailVerification();
+                                  // Oturumu kapat, kullanıcı doğrulama yapmadan erişmemeli
+                                  await FirebaseAuth.instance.signOut();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Hesabınızı aktifleştirmek için e-posta adresinize gelen linke tıklayın.')),
+                                  );
+                                  if (mounted) {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                                    );
+                                  }
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Kayıt sırasında hata oluştu: $e')),
+                                  );
+                                }
                               },
                               child: const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 16),

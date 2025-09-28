@@ -51,7 +51,7 @@ class _ProfilePageState extends State<ProfilePage> {
             .collection('users')
             .doc(user!.uid)
             .get();
-        
+
         if (mounted) {
           setState(() {
             userData = doc.data();
@@ -88,41 +88,38 @@ class _ProfilePageState extends State<ProfilePage> {
               // Header with background
               Container(
                 width: double.infinity,
-                height: 200,
+                height: 230,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF2563EB),
-                      Color(0xFF1D4ED8),
-                    ],
+                    colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                   ),
                 ),
                 child: Stack(
                   children: [
                     // Background pattern
                     Positioned(
-                      top: -50,
-                      right: -50,
+                      top: -40,
+                      right: -40,
                       child: Container(
-                        width: 200,
-                        height: 200,
+                        width: 160,
+                        height: 160,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha:0.1),
+                          color: Colors.white.withValues(alpha: 0.08),
                         ),
                       ),
                     ),
                     Positioned(
-                      bottom: -30,
-                      left: -30,
+                      bottom: -20,
+                      left: -20,
                       child: Container(
-                        width: 150,
-                        height: 150,
+                        width: 120,
+                        height: 120,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha:0.1),
+                          color: Colors.white.withValues(alpha: 0.08),
                         ),
                       ),
                     ),
@@ -148,26 +145,31 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha:0.1),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       blurRadius: 10,
                                       offset: const Offset(0, 5),
                                     ),
                                   ],
                                 ),
-                                child: userData != null && userData!['profileImageUrl'] != null
+                                child:
+                                    userData != null &&
+                                        userData!['profileImageUrl'] != null
                                     ? ClipOval(
                                         child: Image.network(
                                           userData!['profileImageUrl'],
                                           width: 80,
                                           height: 80,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return const Icon(
-                                              Icons.person,
-                                              size: 40,
-                                              color: Color(0xFF2563EB),
-                                            );
-                                          },
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return const Icon(
+                                                  Icons.person,
+                                                  size: 40,
+                                                  color: Color(0xFF2563EB),
+                                                );
+                                              },
                                         ),
                                       )
                                     : const Icon(
@@ -185,11 +187,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            isLoading 
+                                            isLoading
                                                 ? 'Yükleniyor...'
-                                                : userData != null 
-                                                    ? '${userData!['firstName'] ?? ''} ${userData!['lastName'] ?? ''}'.trim()
-                                                    : user?.displayName ?? 'Kullanıcı',
+                                                : userData != null
+                                                ? '${userData!['firstName'] ?? ''} ${userData!['lastName'] ?? ''}'
+                                                      .trim()
+                                                : user?.displayName ??
+                                                      'Kullanıcı',
                                             style: const TextStyle(
                                               fontSize: 24,
                                               fontWeight: FontWeight.bold,
@@ -198,12 +202,17 @@ class _ProfilePageState extends State<ProfilePage> {
                                           ),
                                         ),
                                         // Verification badge
-                                        if (userData != null && _isEmailVerified(user?.email))
+                                        if (userData != null &&
+                                            _isEmailVerified(user?.email))
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
                                             decoration: BoxDecoration(
                                               color: Colors.green,
-                                              borderRadius: BorderRadius.circular(12),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
@@ -233,28 +242,35 @@ class _ProfilePageState extends State<ProfilePage> {
                                         Icon(
                                           Icons.email_outlined,
                                           size: 16,
-                                          color: Colors.white.withValues(alpha:0.8),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.8,
+                                          ),
                                         ),
                                         const SizedBox(width: 6),
                                         Expanded(
                                           child: Text(
                                             user?.email ?? 'email@example.com',
                                             style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.white.withValues(alpha:0.8),
+                                              fontSize: 14,
+                                              color: Colors.white.withValues(
+                                                alpha: 0.8,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                    if (userData != null && userData!['university'] != null) ...[
+                                    if (userData != null &&
+                                        userData!['university'] != null) ...[
                                       const SizedBox(height: 3),
                                       Row(
                                         children: [
                                           Icon(
                                             Icons.school_outlined,
                                             size: 14,
-                                            color: Colors.white.withValues(alpha:0.7),
+                                            color: Colors.white.withValues(
+                                              alpha: 0.7,
+                                            ),
                                           ),
                                           const SizedBox(width: 6),
                                           Expanded(
@@ -262,7 +278,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                               userData!['university'],
                                               style: TextStyle(
                                                 fontSize: 14,
-                                                color: Colors.white.withValues(alpha:0.7),
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.7,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -270,22 +288,29 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ),
                                     ],
                                     // Department/Class info
-                                    if (userData != null && (userData!['department'] != null || userData!['class'] != null)) ...[
+                                    if (userData != null &&
+                                        (userData!['department'] != null ||
+                                            userData!['class'] != null)) ...[
                                       const SizedBox(height: 3),
                                       Row(
                                         children: [
                                           Icon(
                                             Icons.book_outlined,
                                             size: 14,
-                                            color: Colors.white.withValues(alpha:0.7),
+                                            color: Colors.white.withValues(
+                                              alpha: 0.7,
+                                            ),
                                           ),
                                           const SizedBox(width: 6),
                                           Expanded(
                                             child: Text(
-                                              '${userData!['department'] ?? ''} ${userData!['class'] != null ? '- ${userData!['class']}' : ''}'.trim(),
+                                              '${userData!['department'] ?? ''} ${userData!['class'] != null ? '- ${userData!['class']}' : ''}'
+                                                  .trim(),
                                               style: TextStyle(
                                                 fontSize: 14,
-                                                color: Colors.white.withValues(alpha:0.7),
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.7,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -293,15 +318,21 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ),
                                     ],
                                     // Bio preview
-                                    if (userData != null && userData!['bio'] != null && userData!['bio'].toString().isNotEmpty) ...[
+                                    if (userData != null &&
+                                        userData!['bio'] != null &&
+                                        userData!['bio']
+                                            .toString()
+                                            .isNotEmpty) ...[
                                       const SizedBox(height: 3),
                                       Text(
-                                        userData!['bio'].length > 50 
+                                        userData!['bio'].length > 50
                                             ? '${userData!['bio'].substring(0, 50)}...'
                                             : userData!['bio'],
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Colors.white.withValues(alpha:0.7),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.7,
+                                          ),
                                           fontStyle: FontStyle.italic,
                                         ),
                                       ),
@@ -317,7 +348,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              
+
               // Statistics and Interest Tags Section
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -332,7 +363,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           borderRadius: BorderRadius.circular(15),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha:0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 5),
                             ),
@@ -365,7 +396,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Expanded(
                                   child: _buildStatCard(
                                     'Katıldığı Oda',
-                                    userData!['joinedRooms']?.length?.toString() ?? '0',
+                                    userData!['joinedRooms']?.length
+                                            ?.toString() ??
+                                        '0',
                                     Icons.meeting_room_outlined,
                                   ),
                                 ),
@@ -373,7 +406,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Expanded(
                                   child: _buildStatCard(
                                     'Aktif Zaman',
-                                    userData!['activeHours'] != null ? '${userData!['activeHours']['start']}-${userData!['activeHours']['end']}' : 'Belirsiz',
+                                    userData!['activeHours'] != null
+                                        ? '${userData!['activeHours']['start']}-${userData!['activeHours']['end']}'
+                                        : 'Belirsiz',
                                     Icons.access_time_outlined,
                                   ),
                                 ),
@@ -381,7 +416,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             const SizedBox(height: 15),
                             // Achievement badges
-                            if (userData!['achievements'] != null && userData!['achievements'].isNotEmpty)
+                            if (userData!['achievements'] != null &&
+                                userData!['achievements'].isNotEmpty)
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -397,38 +433,52 @@ class _ProfilePageState extends State<ProfilePage> {
                                   Wrap(
                                     spacing: 8,
                                     runSpacing: 8,
-                                    children: (userData!['achievements'] as List).map((achievement) {
-                                      return Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF2563EB).withValues(alpha:0.1),
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(
-                                            color: const Color(0xFF2563EB).withValues(alpha:0.3),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          achievement,
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF2563EB),
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
+                                    children:
+                                        (userData!['achievements'] as List).map(
+                                          (achievement) {
+                                            return Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: const Color(
+                                                  0xFF2563EB,
+                                                ).withValues(alpha: 0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                border: Border.all(
+                                                  color: const Color(
+                                                    0xFF2563EB,
+                                                  ).withValues(alpha: 0.3),
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: Text(
+                                                achievement,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Color(0xFF2563EB),
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ).toList(),
                                   ),
                                 ],
                               ),
                           ],
                         ),
                       ),
-                    
+
                     const SizedBox(height: 15),
-                    
+
                     // Interest Tags Section
-                    if (userData != null && userData!['interestTags'] != null && userData!['interestTags'].isNotEmpty)
+                    if (userData != null &&
+                        userData!['interestTags'] != null &&
+                        userData!['interestTags'].isNotEmpty)
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
@@ -436,7 +486,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           borderRadius: BorderRadius.circular(15),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha:0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 5),
                             ),
@@ -467,23 +517,28 @@ class _ProfilePageState extends State<ProfilePage> {
                             Wrap(
                               spacing: 8,
                               runSpacing: 8,
-                              children: (userData!['interestTags'] as List).map((tag) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF2563EB),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Text(
-                                    '#$tag',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500,
+                              children: (userData!['interestTags'] as List).map(
+                                (tag) {
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
                                     ),
-                                  ),
-                                );
-                              }).toList(),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF2563EB),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      '#$tag',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ).toList(),
                             ),
                           ],
                         ),
@@ -491,7 +546,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              
+
               // Profile options
               Container(
                 margin: const EdgeInsets.all(20),
@@ -500,7 +555,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha:0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -528,7 +583,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     _buildProfileOption(
                       icon: Icons.security_outlined,
                       title: 'Güvenlik & Gizlilik',
-                      subtitle: 'Şifre, engellenenler, konum ve gizlilik ayarları',
+                      subtitle:
+                          'Şifre, engellenenler, konum ve gizlilik ayarları',
                       onTap: () {
                         _showSecuritySettings();
                       },
@@ -591,37 +647,15 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              
+
               // Logout button
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Çıkış Yap'),
-                        content: const Text('Hesabınızdan çıkmak istediğinizden emin misiniz?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('İptal'),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              _signOut();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text('Çıkış Yap'),
-                          ),
-                        ],
-                      ),
-                    );
+                    Navigator.pop(context);
+                    _signOut();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
@@ -647,7 +681,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 30),
             ],
           ),
@@ -673,14 +707,10 @@ class _ProfilePageState extends State<ProfilePage> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFF2563EB).withValues(alpha:0.1),
+                color: const Color(0xFF2563EB).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: const Color(0xFF2563EB),
-                size: 24,
-              ),
+              child: Icon(icon, color: const Color(0xFF2563EB), size: 24),
             ),
             const SizedBox(width: 15),
             Expanded(
@@ -698,19 +728,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
           ],
         ),
       ),
@@ -729,20 +752,16 @@ class _ProfilePageState extends State<ProfilePage> {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: const Color(0xFF2563EB).withValues(alpha:0.05),
+        color: const Color(0xFF2563EB).withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF2563EB).withValues(alpha:0.1),
+          color: const Color(0xFF2563EB).withValues(alpha: 0.1),
           width: 1,
         ),
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: const Color(0xFF2563EB),
-            size: 24,
-          ),
+          Icon(icon, color: const Color(0xFF2563EB), size: 24),
           const SizedBox(height: 8),
           Text(
             value,
@@ -755,10 +774,7 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 4),
           Text(
             title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
         ],
@@ -809,7 +825,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     () {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Engellenen kullanıcılar sayfası yakında')),
+                        const SnackBar(
+                          content: Text(
+                            'Engellenen kullanıcılar sayfası yakında',
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -829,7 +849,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     () {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Rapor geçmişi sayfası yakında')),
+                        const SnackBar(
+                          content: Text('Rapor geçmişi sayfası yakında'),
+                        ),
                       );
                     },
                   ),
@@ -955,10 +977,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 10),
                   Text(
                     'Sosyal medya hesaplarınız sadece karşılıklı eşleşme durumunda görünür.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 20),
                   _buildSocialConnection(
@@ -980,7 +999,12 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildSecurityOption(String title, String subtitle, IconData icon, VoidCallback onTap) {
+  Widget _buildSecurityOption(
+    String title,
+    String subtitle,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -991,14 +1015,10 @@ class _ProfilePageState extends State<ProfilePage> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF2563EB).withValues(alpha:0.1),
+                color: const Color(0xFF2563EB).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(
-                icon,
-                color: const Color(0xFF2563EB),
-                size: 20,
-              ),
+              child: Icon(icon, color: const Color(0xFF2563EB), size: 20),
             ),
             const SizedBox(width: 15),
             Expanded(
@@ -1015,26 +1035,25 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNotificationToggle(String title, String subtitle, IconData icon, bool value, Function(bool) onChanged) {
+  Widget _buildNotificationToggle(
+    String title,
+    String subtitle,
+    IconData icon,
+    bool value,
+    Function(bool) onChanged,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
@@ -1043,14 +1062,10 @@ class _ProfilePageState extends State<ProfilePage> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF2563EB).withValues(alpha:0.1),
+              color: const Color(0xFF2563EB).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              icon,
-              color: const Color(0xFF2563EB),
-              size: 20,
-            ),
+            child: Icon(icon, color: const Color(0xFF2563EB), size: 20),
           ),
           const SizedBox(width: 15),
           Expanded(
@@ -1067,10 +1082,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -1085,7 +1097,11 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildSocialConnection(String platform, IconData icon, String username) {
+  Widget _buildSocialConnection(
+    String platform,
+    IconData icon,
+    String username,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
@@ -1094,14 +1110,10 @@ class _ProfilePageState extends State<ProfilePage> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF2563EB).withValues(alpha:0.1),
+              color: const Color(0xFF2563EB).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              icon,
-              color: const Color(0xFF2563EB),
-              size: 20,
-            ),
+            child: Icon(icon, color: const Color(0xFF2563EB), size: 20),
           ),
           const SizedBox(width: 15),
           Expanded(
@@ -1120,7 +1132,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   username.isEmpty ? 'Bağlantı yok' : username,
                   style: TextStyle(
                     fontSize: 14,
-                    color: username.isEmpty ? Colors.grey[500] : Colors.grey[600],
+                    color: username.isEmpty
+                        ? Colors.grey[500]
+                        : Colors.grey[600],
                   ),
                 ),
               ],
@@ -1156,9 +1170,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _updateNotificationSetting(String type, bool value) {
     // Implementation for notification setting update
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$type bildirim ayarı güncellendi')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('$type bildirim ayarı güncellendi')));
   }
 
   void _editSocialConnection(String platform) {

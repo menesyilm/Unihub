@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'register_page.dart';
 import 'homepage.dart';
 import 'forget_password.dart';
@@ -25,18 +26,74 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = '';
     });
 
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final isStudentMail = RegExp(r'^[^@]+@[^@]+\.edu\.tr$').hasMatch(email);
+    if (!isStudentMail) {
+      setState(() {
+        _errorMessage = 'Lütfen geçerli bir öğrenci e-posta adresi (.edu.tr) ile giriş yapınız.';
+        _isLoading = false;
+      });
+      return;
+    }
+    // Check if email exists in users collection
+    try {
+      final userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+      if (userQuery.docs.isEmpty) {
+        setState(() {
+          _errorMessage = 'Böyle bir kullanıcı bulunmuyor.';
+          _isLoading = false;
+        });
+        return;
+      }
+    } catch (_) {}
+
     try {
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+        email: email,
+        password: password,
       );
 
-      if (credential.user != null && mounted) {
-        debugPrint('Login successful: ${credential.user!.email}');
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
+      // After sign-in, ensure email is verified AND Firestore isVerified is true
+      if (credential.user != null) {
+        await credential.user!.reload();
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) {
+          throw FirebaseAuthException(code: 'user-not-found', message: 'Kullanıcı bulunamadı');
+        }
+
+        // get firestore doc
+        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        final firestoreVerified = doc.exists && (doc.data()?['isVerified'] == true);
+
+        if (!user.emailVerified || !firestoreVerified) {
+          // if auth says verified but firestore false, sync it
+          if (user.emailVerified && !firestoreVerified) {
+            await FirebaseFirestore.instance.collection('users').doc(user.uid).set({'isVerified': true}, SetOptions(merge: true));
+          } else {
+            // not verified yet - sign out and show message
+            await FirebaseAuth.instance.signOut();
+            if (mounted) {
+              setState(() {
+                _errorMessage = 'Hesabınızı aktif ediniz, şu anda pasif durumdadır.';
+                _isLoading = false;
+              });
+            }
+            return;
+          }
+        }
+
+        if (mounted) {
+          debugPrint('Login successful: ${credential.user!.email}');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        }
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage = '';
@@ -162,7 +219,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: TextField(
                           controller: _emailController,
                           decoration: const InputDecoration(
-                            hintText: 'eposta@ornek.com',
+                            hintText: 'ogrenci@universite.edu.tr',
                             hintStyle: TextStyle(
                               color: Color(0xFF9CA3AF),
                               fontSize: 16,
@@ -200,7 +257,7 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _passwordController,
                           obscureText: !_isPasswordVisible,
                           decoration: InputDecoration(
-                            hintText: 'şifrenizi giriniz',
+                            hintText: 'Şifrenizi giriniz',
                             hintStyle: const TextStyle(
                               color: Color(0xFF9CA3AF),
                               fontSize: 16,
