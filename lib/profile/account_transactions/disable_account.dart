@@ -244,35 +244,37 @@ class _DisableAccountPageState extends State<DisableAccountPage> {
             const SizedBox(height: 12),
             
             ..._reasons.map((reason) {
+              final isSelected = _selectedReason == reason;
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: _selectedReason == reason
-                      ? const Color(0xFF2563EB)
-                      : (isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB)),
-                  width: _selectedReason == reason ? 2 : 1,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFF2563EB)
+                        : (isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB)),
+                    width: isSelected ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  color: theme.cardColor,
                 ),
-                borderRadius: BorderRadius.circular(8),
-                color: theme.cardColor,
-              ),
-                child: RadioListTile<String>(
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  leading: Icon(
+                    isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                    color: isSelected ? const Color(0xFF2563EB) : (isDark ? Colors.grey[600] : const Color(0xFF9CA3AF)),
+                  ),
                   title: Text(
                     reason,
                     style: TextStyle(
                       fontSize: 15,
                       color: theme.textTheme.bodyLarge?.color,
-                      fontWeight: _selectedReason == reason
-                          ? FontWeight.w600
-                          : FontWeight.normal,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                     ),
                   ),
-                  value: reason,
-                  groupValue: _selectedReason,
-                  toggleable: true,
-                  onChanged: (value) {
+                  onTap: () {
                     setState(() {
-                      _selectedReason = value;
+                      // toggleable davranış: aynı seçenek tekrar seçilirse kaldır
+                      _selectedReason = isSelected ? null : reason;
                     });
                   },
                 ),
