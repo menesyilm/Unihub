@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'login_page.dart';
-import 'profile_transactions/account_menu.dart';
+import '../sign_transactions/login_page.dart';
+import 'account_transactions/account_menu.dart';
 import 'security_privacy/security_privacy_menu.dart';
 import 'theme/theme_settings.dart';
 

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'start_up_page.dart';
-import 'firebase_options.dart';
-import 'theme/theme_service.dart';
+import 'sign_transactions/start_up_page.dart';
+import 'firebase/firebase_options.dart';
+import 'profile/theme/theme_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> _saveFcmTokenIfPossible() async {
   try {
@@ -23,6 +24,7 @@ Future<void> _saveFcmTokenIfPossible() async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

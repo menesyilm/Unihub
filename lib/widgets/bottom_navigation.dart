@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../homepage.dart';
-import '../profile_page.dart';
+import '../home/homepage.dart';
+import '../profile/profile_page.dart';
+import '../friends/friends_page.dart';
 
 class CustomBottomNavigation extends StatefulWidget {
   final int currentIndex;
@@ -54,6 +55,11 @@ class _CustomBottomNavigationState extends State<CustomBottomNavigation> {
             label: 'Ana Sayfa',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.people_outline),
+            activeIcon: Icon(Icons.people),
+            label: 'Arkadaşlar',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
             label: 'Profil',
@@ -76,6 +82,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
 
   final List<Widget> _pages = [
     const HomeContent(),
+    const FriendsPage(),
     const ProfilePage(),
   ];
 

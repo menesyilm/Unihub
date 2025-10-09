@@ -141,8 +141,7 @@ class _PrivacySettingsPageState extends State<PrivacySettingsPage> {
                       children: [
                         RadioListTile<String>(
                           value: 'everyone',
-                          selected: messagePrivacy == 'everyone',
-                          toggleable: true,
+                          groupValue: messagePrivacy,
                           onChanged: (value) {
                             setState(() {
                               messagePrivacy = value!;
@@ -155,8 +154,7 @@ class _PrivacySettingsPageState extends State<PrivacySettingsPage> {
                         ),
                         RadioListTile<String>(
                           value: 'friends',
-                          selected: messagePrivacy == 'friends',
-                          toggleable: true,
+                          groupValue: messagePrivacy,
                           onChanged: (value) {
                             setState(() {
                               messagePrivacy = value!;
@@ -169,8 +167,7 @@ class _PrivacySettingsPageState extends State<PrivacySettingsPage> {
                         ),
                         RadioListTile<String>(
                           value: 'none',
-                          selected: messagePrivacy == 'none',
-                          toggleable: true,
+                          groupValue: messagePrivacy,
                           onChanged: (value) {
                             setState(() {
                               messagePrivacy = value!;
@@ -196,8 +193,7 @@ class _PrivacySettingsPageState extends State<PrivacySettingsPage> {
                       children: [
                         RadioListTile<String>(
                           value: 'public',
-                          selected: profilePrivacy == 'public',
-                          toggleable: true,
+                          groupValue: profilePrivacy,
                           onChanged: (value) {
                             setState(() {
                               profilePrivacy = value!;
@@ -210,8 +206,7 @@ class _PrivacySettingsPageState extends State<PrivacySettingsPage> {
                         ),
                         RadioListTile<String>(
                           value: 'friends',
-                          selected: profilePrivacy == 'friends',
-                          toggleable: true,
+                          groupValue: profilePrivacy,
                           onChanged: (value) {
                             setState(() {
                               profilePrivacy = value!;
