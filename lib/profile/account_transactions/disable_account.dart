@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../login_page.dart';
+import '../../sign_transactions/login_page.dart';
 
 class DisableAccountPage extends StatefulWidget {
   const DisableAccountPage({super.key});

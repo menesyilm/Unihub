@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'widgets/bottom_navigation.dart';
-import 'services/chat_service.dart';
-import 'pages/chat_page.dart';
+import '../widgets/bottom_navigation.dart';
+import 'chat_service.dart';
+import 'chat_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatelessWidget {

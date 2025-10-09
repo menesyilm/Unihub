@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
-import '../secrets.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
@@ -847,14 +847,15 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   Future<String?> _uploadImage() async {
     if (_selectedProfilImage == null && _selectedCoverImage == null) return _profileImageUrl;
 
-    final cloudName = cloudinaryCloudName;
-    final uploadPreset = cloudinaryUploadPreset;
+    // .env dosyasından Cloudinary bilgilerini al
+    final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'];
+    final uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET'];
 
-    if (cloudName == 'your_cloud_name' || uploadPreset == 'your_upload_preset') {
+    if (cloudName == null || uploadPreset == null || cloudName.isEmpty || uploadPreset.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Cloudinary yapılandırılmadı. `cloudName` ve `uploadPreset` bilgilerini ayarlayın.'),
+            content: Text('Cloudinary yapılandırılmadı. .env dosyasını kontrol edin.'),
             backgroundColor: Colors.red,
           ),
         );

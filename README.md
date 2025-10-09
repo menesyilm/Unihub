@@ -22,12 +22,13 @@ Hızlı başlangıç (Windows)
    flutter pub get
    ```
 3. Firebase yapılandırması
-   - FlutterFire CLI ile projenizi yapılandırın veya mevcut `lib/firebase_options.dart` dosyanızı güncelleyin:
+   - `.env.example` dosyasını `.env` olarak kopyalayın:
      ```
-     flutterfire configure
+     copy .env.example .env
      ```
+   - Firebase Console'dan projenizin yapılandırma bilgilerini alın ve `.env` dosyasına girin.
    - Firebase Console'da Authentication (Email/Password), Firestore ve Storage'ı etkinleştirin.
-   - `lib/firebase_options.dart` dosyası otomatik üretilir veya projeye eklenir (mevcut dosya: `lib/firebase_options.dart`).
+   - **ÖNEMLİ**: `.env` dosyası hassas bilgiler içerir ve `.gitignore` ile Git'ten hariç tutulmuştur. Bu dosyayı asla GitHub'a yüklemeyin!
 
 4. Uygulamayı çalıştır:
    - Emülatörde:
