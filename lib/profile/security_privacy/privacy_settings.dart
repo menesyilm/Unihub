@@ -137,49 +137,31 @@ class _PrivacySettingsPageState extends State<PrivacySettingsPage> {
                     'Kimlerin Mesaj Atabileceğini Seç',
                     'Mesaj gönderebilecek kişileri belirleyin',
                     Icons.message_outlined,
-                    Column(
-                      children: [
-                        RadioListTile<String>(
-                          value: 'everyone',
-                          groupValue: messagePrivacy,
-                          onChanged: (value) {
-                            setState(() {
-                              messagePrivacy = value!;
-                            });
-                            _updatePrivacySetting('messagePrivacy', value);
-                          },
-                          title: const Text('Herkes'),
-                          subtitle: const Text('Tüm kullanıcılar mesaj gönderebilir'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        RadioListTile<String>(
-                          value: 'friends',
-                          groupValue: messagePrivacy,
-                          onChanged: (value) {
-                            setState(() {
-                              messagePrivacy = value!;
-                            });
-                            _updatePrivacySetting('messagePrivacy', value);
-                          },
-                          title: const Text('Arkadaşlar'),
-                          subtitle: const Text('Sadece arkadaşlarım mesaj gönderebilir'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        RadioListTile<String>(
-                          value: 'none',
-                          groupValue: messagePrivacy,
-                          onChanged: (value) {
-                            setState(() {
-                              messagePrivacy = value!;
-                            });
-                            _updatePrivacySetting('messagePrivacy', value);
-                          },
-                          title: const Text('Hiç Kimse'),
-                          subtitle: const Text('Kimse mesaj gönderemez'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ],
-                    ),
+                      SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 'everyone',
+                            label: Text('Herkes'),
+                            icon: Icon(Icons.public),
+                          ),
+                          ButtonSegment(
+                            value: 'friends',
+                            label: Text('Arkadaşlar'),
+                            icon: Icon(Icons.group),
+                          ),
+                          ButtonSegment(
+                            value: 'none',
+                            label: Text('Hiç Kimse'),
+                            icon: Icon(Icons.block),
+                          ),
+                        ],
+                        selected: {messagePrivacy},
+                        onSelectionChanged: (selection) {
+                          final value = selection.first;
+                          setState(() => messagePrivacy = value);
+                          _updatePrivacySetting('messagePrivacy', value);
+                        },
+                      ),
                   ),
 
                   const SizedBox(height: 20),
@@ -189,36 +171,26 @@ class _PrivacySettingsPageState extends State<PrivacySettingsPage> {
                     'Profil Gizliliği',
                     'Profilinizi kimlerin görüntüleyebileceğini seçin',
                     Icons.person_outlined,
-                    Column(
-                      children: [
-                        RadioListTile<String>(
-                          value: 'public',
-                          groupValue: profilePrivacy,
-                          onChanged: (value) {
-                            setState(() {
-                              profilePrivacy = value!;
-                            });
-                            _updatePrivacySetting('profilePrivacy', value);
-                          },
-                          title: const Text('Herkese Açık'),
-                          subtitle: const Text('Profilinizi herkes görüntüleyebilir'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        RadioListTile<String>(
-                          value: 'friends',
-                          groupValue: profilePrivacy,
-                          onChanged: (value) {
-                            setState(() {
-                              profilePrivacy = value!;
-                            });
-                            _updatePrivacySetting('profilePrivacy', value);
-                          },
-                          title: const Text('Sadece Arkadaşlara Açık'),
-                          subtitle: const Text('Sadece arkadaşlarınız profilinizi görüntüleyebilir'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ],
-                    ),
+                      SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 'public',
+                            label: Text('Herkese Açık'),
+                            icon: Icon(Icons.public),
+                          ),
+                          ButtonSegment(
+                            value: 'friends',
+                            label: Text('Arkadaşlar'),
+                            icon: Icon(Icons.group),
+                          ),
+                        ],
+                        selected: {profilePrivacy},
+                        onSelectionChanged: (selection) {
+                          final value = selection.first;
+                          setState(() => profilePrivacy = value);
+                          _updatePrivacySetting('profilePrivacy', value);
+                        },
+                      ),
                   ),
 
                   const SizedBox(height: 30),

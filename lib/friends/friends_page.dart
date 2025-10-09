@@ -193,7 +193,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
           title,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
             fontSize: 16,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
@@ -339,7 +339,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -351,7 +351,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
           children: [
             CircleAvatar(
               radius: 28,
-              backgroundColor: const Color(0xFF2563EB).withOpacity(0.1),
+              backgroundColor: const Color(0xFF2563EB).withValues(alpha: 0.1),
               child: Text(
                 username[0].toUpperCase(),
                 style: const TextStyle(
@@ -490,7 +490,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -500,7 +500,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
         contentPadding: const EdgeInsets.all(16),
         leading: CircleAvatar(
           radius: 28,
-          backgroundColor: const Color(0xFF2563EB).withOpacity(0.1),
+          backgroundColor: const Color(0xFF2563EB).withValues(alpha: 0.1),
           child: Text(
             username[0].toUpperCase(),
             style: const TextStyle(
