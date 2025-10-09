@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'start_up_page.dart';
 import 'firebase_options.dart';
+import 'theme/theme_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -34,9 +36,47 @@ class MyApp extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: StartupScreen(),
-      debugShowCheckedModeBanner: false,
+    return ChangeNotifierProvider(
+      create: (_) => ThemeService(),
+      child: Consumer<ThemeService>(
+        builder: (context, themeService, child) {
+          return MaterialApp(
+            home: const StartupScreen(),
+            debugShowCheckedModeBanner: false,
+            themeMode: themeService.themeMode,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF2563EB),
+                brightness: Brightness.light,
+              ),
+              useMaterial3: true,
+              scaffoldBackgroundColor: Colors.grey[50],
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+                elevation: 0,
+              ),
+              cardColor: Colors.white,
+              dividerColor: Color(0xFFE5E7EB),
+            ),
+            darkTheme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF2563EB),
+                brightness: Brightness.dark,
+              ),
+              useMaterial3: true,
+              scaffoldBackgroundColor: const Color(0xFF121212),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Color(0xFF1E1E1E),
+                foregroundColor: Colors.white,
+                elevation: 0,
+              ),
+              cardColor: const Color(0xFF1E1E1E),
+              dividerColor: const Color(0xFF2D2D2D),
+            ),
+          );
+        },
+      ),
     );
   }
 }

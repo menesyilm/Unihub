@@ -19,11 +19,14 @@ class CustomBottomNavigation extends StatefulWidget {
 class _CustomBottomNavigationState extends State<CustomBottomNavigation> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -33,9 +36,9 @@ class _CustomBottomNavigationState extends State<CustomBottomNavigation> {
         currentIndex: widget.currentIndex,
         onTap: widget.onTap,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
+        backgroundColor: theme.cardColor,
         selectedItemColor: const Color(0xFF2563EB),
-        unselectedItemColor: Colors.grey[600],
+        unselectedItemColor: isDark ? Colors.grey[500] : Colors.grey[600],
         selectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.w600,
           fontSize: 12,

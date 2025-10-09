@@ -77,6 +77,9 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SizedBox(
@@ -106,9 +109,9 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
               right: 0,
               child: Container(
                 height: MediaQuery.of(context).size.height * 0.7,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: theme.cardColor,
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(50),
                     topRight: Radius.circular(50),
                   ),
@@ -119,12 +122,12 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 20),
-                      const Text(
+                      Text(
                         'Şifremi Unuttum',
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2D3748),
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                       Container(
@@ -138,11 +141,11 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                       ),
                       const SizedBox(height: 40),
                       
-                      const Text(
+                      Text(
                         'E-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF6B7280),
+                          color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
                           height: 1.4,
                         ),
                       ),
@@ -150,35 +153,38 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                       const SizedBox(height: 30),
                       
                       // Email field
-                      const Text(
+                      Text(
                         'E-posta',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF6B7280),
+                          color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextField(
                           controller: _emailController,
-                          decoration: const InputDecoration(
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                          decoration: InputDecoration(
                             hintText: 'ogrenci@universite.edu.tr',
                             hintStyle: TextStyle(
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               fontSize: 16,
                             ),
                             prefixIcon: Icon(
                               Icons.email_outlined,
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           ),
                           keyboardType: TextInputType.emailAddress,
                         ),
