@@ -58,14 +58,14 @@ class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
           title: const Text('UniHub'),
           centerTitle: true,
-          backgroundColor: const Color(0xFF2563EB),
-          foregroundColor: Colors.white,
-          elevation: 0,
           automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
@@ -143,12 +143,12 @@ class HomeContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Sosyalleşme Aktiviteleri',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3748),
+                      color: isDark ? Colors.white : const Color(0xFF2D3748),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -158,6 +158,7 @@ class HomeContent extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _buildQuickAccessCard(
+                          context: context,
                           icon: Icons.menu_book,
                           title: 'Kitap Okuma',
                           subtitle: 'Kitap okuma arkadaşı bul',
@@ -167,6 +168,7 @@ class HomeContent extends StatelessWidget {
                       const SizedBox(width: 15),
                       Expanded(
                         child: _buildQuickAccessCard(
+                          context: context,
                           icon: Icons.school,
                           title: 'Ders Çalışma',
                           subtitle: 'Ders çalışma arkadaşı bul',
@@ -182,6 +184,7 @@ class HomeContent extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _buildQuickAccessCard(
+                          context: context,
                           icon: Icons.movie,
                           title: 'Sinema',
                           subtitle: 'Film izleme arkadaşı bul',
@@ -191,6 +194,7 @@ class HomeContent extends StatelessWidget {
                       const SizedBox(width: 15),
                       Expanded(
                         child: _buildQuickAccessCard(
+                          context: context,
                           icon: Icons.local_cafe,
                           title: 'Kahve',
                           subtitle: 'Kahve içme arkadaşı bul',
@@ -206,6 +210,7 @@ class HomeContent extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _buildQuickAccessCard(
+                          context: context,
                           icon: Icons.restaurant,
                           title: 'Yemek',
                           subtitle: 'Yemek yeme arkadaşı bul',
@@ -215,6 +220,7 @@ class HomeContent extends StatelessWidget {
                       const SizedBox(width: 15),
                       Expanded(
                         child: _buildQuickAccessCard(
+                          context: context,
                           icon: Icons.fitness_center,
                           title: 'Spor',
                           subtitle: 'Spor yapma arkadaşı bul',
@@ -230,6 +236,8 @@ class HomeContent extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _buildQuickAccessCard(
+                          
+                          context: context,
                           icon: Icons.sports_esports,
                           title: 'Oyun',
                           subtitle: 'Oyun oynama arkadaşı bul',
@@ -239,6 +247,7 @@ class HomeContent extends StatelessWidget {
                       const SizedBox(width: 15),
                       Expanded(
                         child: _buildQuickAccessCard(
+                          context: context,
                           icon: Icons.directions_walk,
                           title: 'Yürüyüş',
                           subtitle: 'Yürüyüş arkadaşı bul',
@@ -251,12 +260,12 @@ class HomeContent extends StatelessWidget {
                   const SizedBox(height: 30),
                   
                   // Recent activity
-                  const Text(
+                  Text(
                     'Son Aktiviteler',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3748),
+                      color: isDark ? Colors.white : const Color(0xFF2D3748),
                     ),
                   ),
                   const SizedBox(height: 15),
@@ -265,11 +274,11 @@ class HomeContent extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: theme.cardColor,
                       borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 5),
                         ),
@@ -278,6 +287,7 @@ class HomeContent extends StatelessWidget {
                     child: Column(
                       children: [
                         _buildActivityItem(
+                          context: context,
                           icon: Icons.login,
                           title: 'Giriş yapıldı',
                           subtitle: 'Hesabınıza başarıyla giriş yaptınız',
@@ -285,6 +295,7 @@ class HomeContent extends StatelessWidget {
                         ),
                         const SizedBox(height: 15),
                         _buildActivityItem(
+                          context: context,
                           icon: Icons.person_add,
                           title: 'Hesap oluşturuldu',
                           subtitle: 'UniHub hesabınız oluşturuldu',
@@ -307,18 +318,22 @@ class HomeContent extends StatelessWidget {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    required BuildContext context,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(15),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -342,10 +357,10 @@ class HomeContent extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF2D3748),
+                color: isDark ? Colors.white : const Color(0xFF2D3748),
               ),
               textAlign: TextAlign.center,
             ),
@@ -354,7 +369,7 @@ class HomeContent extends StatelessWidget {
               subtitle,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
               ),
               textAlign: TextAlign.center,
             ),
@@ -369,7 +384,10 @@ class HomeContent extends StatelessWidget {
     required String title,
     required String subtitle,
     required String time,
+    required BuildContext context,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Row(
       children: [
         Container(
@@ -392,10 +410,10 @@ class HomeContent extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF2D3748),
+                  color: isDark ? Colors.white : const Color(0xFF2D3748),
                 ),
               ),
               const SizedBox(height: 2),
@@ -403,7 +421,7 @@ class HomeContent extends StatelessWidget {
                 subtitle,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
                 ),
               ),
             ],
@@ -413,7 +431,7 @@ class HomeContent extends StatelessWidget {
           time,
           style: TextStyle(
             fontSize: 12,
-            color: Colors.grey[500],
+            color: isDark ? Colors.grey[400] : Colors.grey[500],
           ),
         ),
       ],

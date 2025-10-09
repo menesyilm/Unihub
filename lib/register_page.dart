@@ -31,6 +31,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SizedBox(
@@ -60,9 +63,9 @@ class _RegisterPageState extends State<RegisterPage> {
               right: 0,
               child: Container(
                 height: MediaQuery.of(context).size.height * 0.8,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: theme.cardColor,
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(50),
                     topRight: Radius.circular(50),
                   ),
@@ -73,12 +76,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 20),
-                      const Text(
+                      Text(
                         'Kayıt Ol',
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2D3748),
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                       Container(
@@ -94,143 +97,155 @@ class _RegisterPageState extends State<RegisterPage> {
                       
 
                       // Name field
-                      const Text(
+                      Text(
                         'Ad',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF6B7280),
+                          color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextField(
                           controller: _nameController,
-                          decoration: const InputDecoration(
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                          decoration: InputDecoration(
                             hintText: 'Adınızı giriniz',
                             hintStyle: TextStyle(
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               fontSize: 16,
                             ),
                             prefixIcon: Icon(
                               Icons.person_outline,
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           ),
                           keyboardType: TextInputType.name,
                         ),
                       ),
                       const SizedBox(height: 24),
                       // Surname field
-                      const Text(
+                      Text(
                         'Soyad',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF6B7280),
+                          color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextField(
                           controller: _surnameController,
-                          decoration: const InputDecoration(
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                          decoration: InputDecoration(
                             hintText: 'Soyadınızı giriniz',
                             hintStyle: TextStyle(
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               fontSize: 16,
                             ),
                             prefixIcon: Icon(
                               Icons.person_outline,
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           ),
                           keyboardType: TextInputType.name,
                         ),
                       ),
                       const SizedBox(height: 24),
                                             // Email field
-                      const Text(
+                      Text(
                         'E-posta',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF6B7280),
+                          color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextField(
                           controller: _emailController,
-                          decoration: const InputDecoration(
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                          decoration: InputDecoration(
                             hintText: 'ogrenci@universite.edu.tr',
                             hintStyle: TextStyle(
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               fontSize: 16,
                             ),
                             prefixIcon: Icon(
                               Icons.email_outlined,
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           ),
                           keyboardType: TextInputType.emailAddress,
                         ),
                       ),
                       const SizedBox(height: 24),
                       // Password field
-                      const Text(
+                      Text(
                         'Şifre',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF6B7280),
+                          color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextField(
                           controller: _passwordController,
                           obscureText: !_isPasswordVisible,
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                           decoration: InputDecoration(
                             hintText: 'Şifrenizi giriniz',
-                            hintStyle: const TextStyle(
-                              color: Color(0xFF9CA3AF),
+                            hintStyle: TextStyle(
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               fontSize: 16,
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.lock_outline,
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                                color: const Color(0xFF9CA3AF),
+                                color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                                 size: 20,
                               ),
                               onPressed: () {
@@ -246,38 +261,41 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 24),
                       // Confirm Password field
-                      const Text(
+                      Text(
                         'Şifre Tekrarı',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF6B7280),
+                          color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextField(
                           controller: _confirmPasswordController,
                           obscureText: !_isConfirmPasswordVisible,
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                           decoration: InputDecoration(
                             hintText: 'Şifrenizi tekrar giriniz',
-                            hintStyle: const TextStyle(
-                              color: Color(0xFF9CA3AF),
+                            hintStyle: TextStyle(
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               fontSize: 16,
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.lock_outline,
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                                color: const Color(0xFF9CA3AF),
+                                color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                                 size: 20,
                               ),
                               onPressed: () {
@@ -404,16 +422,16 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
+                            Text(
                               'Zaten hesabınız var mı? ',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Color(0xFF6B7280),
+                                color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
                               ),
                             ),
                             TextButton(
                               onPressed: () {
-                                debugPrint('Login link tapped');
+                                debugPrint('login_page: Login link tapped');
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(

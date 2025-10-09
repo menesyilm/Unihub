@@ -140,6 +140,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SizedBox(
@@ -169,9 +172,9 @@ class _LoginPageState extends State<LoginPage> {
               right: 0,
               child: Container(
                 height: MediaQuery.of(context).size.height * 0.75,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: theme.cardColor,
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(50),
                     topRight: Radius.circular(50),
                   ),
@@ -182,12 +185,12 @@ class _LoginPageState extends State<LoginPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 20),
-                      const Text(
+                      Text(
                         'Giriş Yap',
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2D3748),
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                       Container(
@@ -202,35 +205,38 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 40),
                       
                       // Email field
-                      const Text(
+                      Text(
                         'E-posta',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF6B7280),
+                          color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextField(
                           controller: _emailController,
-                          decoration: const InputDecoration(
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                          decoration: InputDecoration(
                             hintText: 'ogrenci@universite.edu.tr',
                             hintStyle: TextStyle(
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               fontSize: 16,
                             ),
                             prefixIcon: Icon(
                               Icons.email_outlined,
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           ),
                           keyboardType: TextInputType.emailAddress,
                         ),
@@ -239,38 +245,41 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 24),
                       
                       // Password field
-                      const Text(
+                      Text(
                         'Şifre',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF6B7280),
+                          color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextField(
                           controller: _passwordController,
                           obscureText: !_isPasswordVisible,
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                           decoration: InputDecoration(
                             hintText: 'Şifrenizi giriniz',
-                            hintStyle: const TextStyle(
-                              color: Color(0xFF9CA3AF),
+                            hintStyle: TextStyle(
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               fontSize: 16,
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.lock_outline,
-                              color: Color(0xFF9CA3AF),
+                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                                color: const Color(0xFF9CA3AF),
+                                color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                                 size: 20,
                               ),
                               onPressed: () {
@@ -297,9 +306,9 @@ class _LoginPageState extends State<LoginPage> {
                                 width: 20,
                                 height: 20,
                                 decoration: BoxDecoration(
-                                  color: _rememberMe ? const Color(0xFF2563EB) : Colors.white,
+                                  color: _rememberMe ? const Color(0xFF2563EB) : (isDark ? const Color(0xFF1E1E1E) : Colors.white),
                                   border: Border.all(
-                                    color: _rememberMe ? const Color(0xFF2563EB) : const Color(0xFFE5E7EB),
+                                    color: _rememberMe ? const Color(0xFF2563EB) : (isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB)),
                                     width: 2,
                                   ),
                                   borderRadius: BorderRadius.circular(4),
@@ -324,11 +333,11 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Text(
+                              Text(
                                 'Beni Hatırla',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Color(0xFF6B7280),
+                                  color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
                                 ),
                               ),
                             ],
@@ -442,11 +451,11 @@ class _LoginPageState extends State<LoginPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
+                            Text(
                               "Hesabınız yok mu? ",
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Color(0xFF6B7280),
+                                color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
                               ),
                             ),
                             TextButton(

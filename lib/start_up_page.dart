@@ -6,7 +6,11 @@ class StartupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SizedBox(
         width: double.infinity,
         height: double.infinity,
@@ -34,9 +38,9 @@ class StartupScreen extends StatelessWidget {
               right: 0,
               child: Container(
                 height: MediaQuery.of(context).size.height * 0.45,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: theme.cardColor,
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(50),
                     topRight: Radius.circular(50),
                   ),
@@ -46,12 +50,12 @@ class StartupScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-                    const Text(
+                    Text(
                       'Hoş Geldiniz',
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2D3748),
+                        color: isDark ? Colors.white : const Color(0xFF2D3748),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -59,7 +63,7 @@ class StartupScreen extends StatelessWidget {
                       'UniHub\'a hoş geldiniz. Üniversite hayatınızı kolaylaştıracağız.',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.grey[600],
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
                         height: 1.4,
                       ),
                     ),

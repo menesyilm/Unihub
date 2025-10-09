@@ -20,6 +20,7 @@ dependencies:
   image_picker: ^1.2.0
   app_links: ^6.4.1
   cloudinary_public: ^0.23.1
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:

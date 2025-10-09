@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
-import 'secrets.dart';
+import '../secrets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-class ProfileEditPage extends StatefulWidget {
-  const ProfileEditPage({super.key});
+class AccountInfoPage extends StatefulWidget {
+  const AccountInfoPage({super.key});
 
   @override
-  State<ProfileEditPage> createState() => _ProfileEditPageState();
+  State<AccountInfoPage> createState() => _AccountInfoPageState();
 }
 
-class _ProfileEditPageState extends State<ProfileEditPage> {
+class _AccountInfoPageState extends State<AccountInfoPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -76,7 +76,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           .map((doc) => doc.data()['name'] as String)
           .toList();
 
-      // Alfabetik sıralama
       universities.sort((a, b) => a.compareTo(b));
 
       setState(() {
@@ -98,6 +97,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       }
     }
   }
+  
   Future<void> _loadDepartments() async {
     setState(() {
       _isLoadingDepartments = true;
@@ -134,6 +134,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       }
     }
   }
+  
   Future<void> _loadClasses() async {
     setState(() {
       _isLoadingClasses = true;
@@ -200,7 +201,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           _profileImageUrl = data['profileImageUrl'];
           _coverImageUrl = data['coverImageUrl'];
           
-          // Update interest tags controller
           _interestTagsController.text = _interestTags.join(', ');
         }
       }
@@ -235,6 +235,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       }
     });
   }
+  
   void _filterDepartments(String query) {
     setState(() {
       _hasDeptSearchText = query.isNotEmpty;
@@ -245,6 +246,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               .toList();
     });
   }
+  
   void _filterClasses(String query) {
     setState(() {
       _hasClassSearchText = query.isNotEmpty;
@@ -257,10 +259,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   }
 
   void _showUniversityBottomSheet() {
-
-    // Arama kutusunu temizle
     _searchController.clear();
     _filterUniversities('');
+    
+    final theme = Theme.of(context);
     
     showModalBottomSheet(
       context: context,
@@ -268,16 +270,15 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
           ),
         ),
         child: Column(
           children: [
-            // Handle bar
             Container(
               width: 40,
               height: 4,
@@ -287,17 +288,16 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            // Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
                 children: [
-                  const Text(
+                  Text(
                     'Üniversite Seçin',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3748),
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                   const Spacer(),
@@ -309,11 +309,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               ),
             ),
             const Divider(),
-            // Search bar
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
                 controller: _searchController,
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                 onChanged: (query) {
                   setState(() {
                     _hasUniSearchText = query.isNotEmpty;
@@ -329,6 +329,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 },
                 decoration: InputDecoration(
                   hintText: 'Üniversite ara...',
+                  hintStyle: TextStyle(
+                    color: theme.brightness == Brightness.dark 
+                        ? Colors.grey[600] 
+                        : const Color(0xFF9CA3AF),
+                  ),
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: _hasUniSearchText
                       ? IconButton(
@@ -344,7 +349,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       : null,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                    borderSide: BorderSide(
+                      color: theme.brightness == Brightness.dark
+                          ? const Color(0xFF2D2D2D)
+                          : Colors.grey[300]!,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -357,7 +366,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 ),
               ),
             ),
-            // Universities list
             Expanded(
               child: _isLoadingUniversities
                   ? const Center(
@@ -366,29 +374,25 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       ),
                     )
                   : _filteredUniversities.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
                                 Icons.search_off,
                                 size: 64,
-                                color: Colors.grey,
+                                color: theme.brightness == Brightness.dark 
+                                    ? Colors.grey[600]
+                                    : Colors.grey,
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               Text(
                                 'Üniversite bulunamadı',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Farklı bir arama terimi deneyin',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey,
+                                  color: theme.brightness == Brightness.dark 
+                                      ? Colors.grey[400]
+                                      : Colors.grey,
                                 ),
                               ),
                             ],
@@ -431,9 +435,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       ),
     );
   }
+
   void _showDepartmentBottomSheet() {
     _searchController.clear();
     _filterDepartments('');
+    
+    final theme = Theme.of(context);
     
     showModalBottomSheet(
       context: context,
@@ -441,16 +448,15 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
           ),
         ),
         child: Column(
           children: [
-            // Handle bar
             Container(
               width: 40,
               height: 4,
@@ -460,17 +466,16 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            // Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
                 children: [
-                  const Text(
+                  Text(
                     'Bölüm Seçin',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3748),
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                   const Spacer(),
@@ -482,11 +487,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               ),
             ),
             const Divider(),
-            // Search bar
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
                 controller: _searchController,
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                 onChanged: (query) {
                   setState(() {
                     _hasDeptSearchText = query.isNotEmpty;
@@ -502,6 +507,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 },
                 decoration: InputDecoration(
                   hintText: 'Bölüm ara...',
+                  hintStyle: TextStyle(
+                    color: theme.brightness == Brightness.dark 
+                        ? Colors.grey[600] 
+                        : const Color(0xFF9CA3AF),
+                  ),
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: _hasDeptSearchText
                       ? IconButton(
@@ -517,7 +527,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       : null,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                    borderSide: BorderSide(
+                      color: theme.brightness == Brightness.dark
+                          ? const Color(0xFF2D2D2D)
+                          : Colors.grey[300]!,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -530,7 +544,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 ),
               ),
             ),
-            // Universities list
             Expanded(
               child: _isLoadingDepartments
                   ? const Center(
@@ -539,29 +552,25 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       ),
                     )
                   : _filteredDepartments.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
                                 Icons.search_off,
                                 size: 64,
-                                color: Colors.grey,
+                                color: theme.brightness == Brightness.dark 
+                                    ? Colors.grey[600]
+                                    : Colors.grey,
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               Text(
                                 'Bölüm bulunamadı',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Farklı bir arama terimi deneyin',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey,
+                                  color: theme.brightness == Brightness.dark 
+                                      ? Colors.grey[400]
+                                      : Colors.grey,
                                 ),
                               ),
                             ],
@@ -578,7 +587,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                             department,
                             style: TextStyle(
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF2D3748),
+                              color: isSelected ? const Color(0xFF2563EB) : theme.textTheme.bodyLarge?.color,
                             ),
                           ),
                           trailing: isSelected
@@ -604,10 +613,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       ),
     );
   }
+
   void _showClassBottomSheet() {
-    // Arama kutusunu temizle
     _searchController.clear();
     _filterClasses('');
+    
+    final theme = Theme.of(context);
     
     showModalBottomSheet(
       context: context,
@@ -615,16 +626,15 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
           ),
         ),
         child: Column(
           children: [
-            // Handle bar
             Container(
               width: 40,
               height: 4,
@@ -634,17 +644,16 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            // Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
                 children: [
-                  const Text(
+                  Text(
                     'Sınıf Seçin',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3748),
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                   const Spacer(),
@@ -656,11 +665,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               ),
             ),
             const Divider(),
-            // Search bar
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
                 controller: _searchController,
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                 onChanged: (query) {
                   setState(() {
                     _hasClassSearchText = query.isNotEmpty;
@@ -676,6 +685,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 },
                 decoration: InputDecoration(
                   hintText: 'Sınıf ara...',
+                  hintStyle: TextStyle(
+                    color: theme.brightness == Brightness.dark 
+                        ? Colors.grey[600] 
+                        : const Color(0xFF9CA3AF),
+                  ),
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: _hasClassSearchText
                       ? IconButton(
@@ -691,7 +705,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       : null,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                    borderSide: BorderSide(
+                      color: theme.brightness == Brightness.dark
+                          ? const Color(0xFF2D2D2D)
+                          : Colors.grey[300]!,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -704,7 +722,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 ),
               ),
             ),
-            // Universities list
             Expanded(
               child: _isLoadingClasses
                   ? const Center(
@@ -713,29 +730,25 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       ),
                     )
                   : _filteredClasses.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
                                 Icons.search_off,
                                 size: 64,
-                                color: Colors.grey,
+                                color: theme.brightness == Brightness.dark 
+                                    ? Colors.grey[600]
+                                    : Colors.grey,
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               Text(
                                 'Sınıf bulunamadı',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Farklı bir arama terimi deneyin',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey,
+                                  color: theme.brightness == Brightness.dark 
+                                      ? Colors.grey[400]
+                                      : Colors.grey,
                                 ),
                               ),
                             ],
@@ -752,7 +765,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                             classes,
                             style: TextStyle(
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF2D3748),
+                              color: isSelected ? const Color(0xFF2563EB) : theme.textTheme.bodyLarge?.color,
                             ),
                           ),
                           trailing: isSelected
@@ -834,7 +847,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   Future<String?> _uploadImage() async {
     if (_selectedProfilImage == null && _selectedCoverImage == null) return _profileImageUrl;
 
-    // Read Cloudinary credentials from lib/secrets.dart (update that file with your real values)
     final cloudName = cloudinaryCloudName;
     final uploadPreset = cloudinaryUploadPreset;
 
@@ -853,7 +865,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     try {
       final cloudinary = CloudinaryPublic(cloudName, uploadPreset, cache: false);
 
-      // If profile image selected, upload it first
       if (_selectedProfilImage != null) {
         final resProfile = await cloudinary.uploadFile(
           CloudinaryFile.fromFile(_selectedProfilImage!.path, resourceType: CloudinaryResourceType.Image),
@@ -861,7 +872,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         _profileImageUrl = resProfile.secureUrl;
       }
 
-      // If cover image selected, upload it
       if (_selectedCoverImage != null) {
         final resCover = await cloudinary.uploadFile(
           CloudinaryFile.fromFile(_selectedCoverImage!.path, resourceType: CloudinaryResourceType.Image),
@@ -915,7 +925,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // Fotoğrafı yükle (profile ve cover varsa)
         await _uploadImage();
 
         await FirebaseFirestore.instance
@@ -980,13 +989,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Profil Düzenle'),
-        backgroundColor: const Color(0xFF2563EB),
-        foregroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('Hesap Bilgileri'),
       ),
       body: _isLoading
           ? const Center(
@@ -1004,7 +1012,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     // Header with Cover Image and Profile Photo
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -1012,127 +1019,266 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         children: [
                           // Cover image area
                           Stack(
+                            clipBehavior: Clip.none,
                             children: [
-                              Container(
-                                width: double.infinity,
-                                height: 160,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF2563EB),
-                                  borderRadius: BorderRadius.circular(15),
+                              // Cover Image
+                              GestureDetector(
+                                onTap: _pickCoverImage,
+                                child: Container(
+                                  width: double.infinity,
+                                  height: 200,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2563EB),
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: _selectedCoverImage != null
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(15),
+                                          child: Image.file(
+                                            _selectedCoverImage!,
+                                            width: double.infinity,
+                                            height: 200,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        )
+                                      : (_coverImageUrl != null
+                                          ? ClipRRect(
+                                              borderRadius: BorderRadius.circular(15),
+                                              child: Image.network(
+                                                _coverImageUrl!,
+                                                width: double.infinity,
+                                                height: 200,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) => 
+                                                  Container(
+                                                    color: const Color(0xFF2563EB),
+                                                    child: const Center(
+                                                      child: Icon(
+                                                        Icons.image_outlined,
+                                                        size: 50,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ),
+                                            )
+                                          : Container(
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                  colors: [
+                                                    const Color(0xFF2563EB),
+                                                    const Color(0xFF1D4ED8),
+                                                  ],
+                                                ),
+                                                borderRadius: BorderRadius.circular(15),
+                                              ),
+                                              child: const Center(
+                                                child: Icon(
+                                                  Icons.image_outlined,
+                                                  size: 50,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            )),
                                 ),
-                                child: _selectedCoverImage != null
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(15),
-                                        child: Image.file(
-                                          _selectedCoverImage!,
-                                          width: double.infinity,
-                                          height: 160,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      )
-                                    : (_coverImageUrl != null
-                                        ? ClipRRect(
-                                            borderRadius: BorderRadius.circular(15),
-                                            child: Image.network(
-                                              _coverImageUrl!,
-                                              width: double.infinity,
-                                              height: 160,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) => Container(color: const Color(0xFF2563EB)),
-                                            ),
-                                          )
-                                        : Container()),
                               ),
-                              // Avatar positioned overlapping cover
+                              // Camera icon for cover
+                              if (_selectedCoverImage == null && _coverImageUrl == null)
+                                Positioned(
+                                  top: 12,
+                                  right: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(alpha: 0.5),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.add_photo_alternate,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              // Profile Image
                               Positioned(
-                                left: 16,
-                                bottom: -40,
+                                left: 20,
+                                bottom: -50,
                                 child: GestureDetector(
                                   onTap: _pickImage,
-                                  child: CircleAvatar(
-                                    radius: 56,
-                                    backgroundColor: Colors.white,
-                                    child: _selectedProfilImage != null
-                                        ? ClipOval(
-                                            child: Image.file(
-                                              _selectedProfilImage!,
-                                              width: 104,
-                                              height: 104,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          )
-                                        : _profileImageUrl != null
-                                            ? ClipOval(
-                                                child: Image.network(
-                                                  _profileImageUrl!,
-                                                  width: 104,
-                                                  height: 104,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.person_outline, size: 50),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 4,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.2),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 60,
+                                      backgroundColor: Colors.grey[200],
+                                      child: _selectedProfilImage != null
+                                          ? ClipOval(
+                                              child: Image.file(
+                                                _selectedProfilImage!,
+                                                width: 120,
+                                                height: 120,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            )
+                                          : _profileImageUrl != null
+                                              ? ClipOval(
+                                                  child: Image.network(
+                                                    _profileImageUrl!,
+                                                    width: 120,
+                                                    height: 120,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context, error, stackTrace) => 
+                                                      Icon(
+                                                        Icons.person,
+                                                        size: 60,
+                                                        color: Colors.grey[400],
+                                                      ),
+                                                  ),
+                                                )
+                                              : Icon(
+                                                  Icons.person,
+                                                  size: 60,
+                                                  color: Colors.grey[400],
                                                 ),
-                                              )
-                                            : const Icon(Icons.person_outline, size: 50),
+                                    ),
                                   ),
                                 ),
                               ),
+                              // Camera icon for profile
+                              if (_selectedProfilImage == null && _profileImageUrl == null)
+                                Positioned(
+                                  left: 90,
+                                  bottom: -40,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF2563EB),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.camera_alt,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
-                          const SizedBox(height: 56),
+                          const SizedBox(height: 60),
                           // Image action buttons
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // Cover photo buttons
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    ElevatedButton.icon(
-                                      onPressed: _pickCoverImage,
-                                      icon: const Icon(Icons.photo_camera),
-                                      label: const Text('Kapak Değiştir'),
-                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent),
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: _pickCoverImage,
+                                        icon: const Icon(Icons.photo_camera, size: 18),
+                                        label: const Text('Kapak Değiştir'),
+                                        style: OutlinedButton.styleFrom(
+                                         backgroundColor: const Color(0xFF2563EB),
+                                          foregroundColor: Colors.white,
+                                          side: const BorderSide(color: Color(0xFF2563EB)),
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                        ),
+                                      ),
                                     ),
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        setState(() {
-                                          _selectedCoverImage = null;
-                                          _coverImageUrl = null;
-                                        });
-                                        final user = FirebaseAuth.instance.currentUser;
-                                        if (user != null) {
-                                          await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'coverImageUrl': null});
-                                        }
-                                      },
-                                      child: const Text('Kapak Kaldır'),
-                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-                                    ),
+                                    if (_selectedCoverImage != null || _coverImageUrl != null) ...[
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () async {
+                                            setState(() {
+                                              _selectedCoverImage = null;
+                                              _coverImageUrl = null;
+                                            });
+                                            final user = FirebaseAuth.instance.currentUser;
+                                            if (user != null) {
+                                              await FirebaseFirestore.instance
+                                                  .collection('users')
+                                                  .doc(user.uid)
+                                                  .update({'coverImageUrl': null});
+                                            }
+                                          },
+                                          icon: const Icon(Icons.delete_outline, size: 18),
+                                          label: const Text('Kapak Kaldır'),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: Colors.red,
+                                            side: const BorderSide(color: Colors.red),
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ],
                                 ),
-                                const SizedBox(height: 16),
-                                // Avatar buttons
+                                const SizedBox(height: 12),
+                                // Profile photo buttons
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    ElevatedButton(
-                                      onPressed: _pickImage,
-                                      child: const Text('Avatar Değiştir'),
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: _pickImage,
+                                        icon: const Icon(Icons.person, size: 18),
+                                        label: const Text('Profil Değiştir'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF2563EB),
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          elevation: 0,
+                                        ),
+                                      ),
                                     ),
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        setState(() {
-                                          _selectedProfilImage = null;
-                                          _profileImageUrl = null;
-                                        });
-                                        final user = FirebaseAuth.instance.currentUser;
-                                        if (user != null) {
-                                          await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'profileImageUrl': null});
-                                        }
-                                      },
-                                      child: const Text('Avatar Kaldır'),
-                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-                                    ),
+                                    if (_selectedProfilImage != null || _profileImageUrl != null) ...[
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () async {
+                                            setState(() {
+                                              _selectedProfilImage = null;
+                                              _profileImageUrl = null;
+                                            });
+                                            final user = FirebaseAuth.instance.currentUser;
+                                            if (user != null) {
+                                              await FirebaseFirestore.instance
+                                                  .collection('users')
+                                                  .doc(user.uid)
+                                                  .update({'profileImageUrl': null});
+                                            }
+                                          },
+                                          icon: const Icon(Icons.delete_outline, size: 18),
+                                          label: const Text('Profil Kaldır'),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: Colors.red,
+                                            side: const BorderSide(color: Colors.red),
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ],
@@ -1197,12 +1343,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     const SizedBox(height: 20),
                     
                     // University selection
-                    const Text(
+                    Text(
                       'Üniversite',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
+                        color: theme.textTheme.bodyLarge?.color,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -1210,16 +1356,22 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       onTap: _showUniversityBottomSheet,
                       child: Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF2D2D2D)
+                                : const Color(0xFFE5E7EB),
+                          ),
                           borderRadius: BorderRadius.circular(8),
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.school_outlined,
-                              color: Color(0xFF9CA3AF),
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[600]
+                                  : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                             const SizedBox(width: 12),
@@ -1230,42 +1382,35 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                                     : _selectedUniversity,
                                 style: TextStyle(
                                   color: _selectedUniversity.isEmpty 
-                                      ? const Color(0xFF9CA3AF)
-                                      : const Color(0xFF2D3748),
+                                      ? (Theme.of(context).brightness == Brightness.dark
+                                          ? Colors.grey[600]
+                                          : const Color(0xFF9CA3AF))
+                                      : theme.textTheme.bodyLarge?.color,
                                   fontSize: 16,
                                 ),
                               ),
                             ),
-                            const Icon(
+                            Icon(
                               Icons.keyboard_arrow_down,
-                              color: Color(0xFF9CA3AF),
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[600]
+                                  : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                           ],
                         ),
                       ),
                     ),
-                    if (_selectedUniversity.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8, left: 16),
-                        child: Text(
-                          'Üniversite seçimi zorunludur',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
                     
                     const SizedBox(height: 20),
                     
                     // Department selection
-                    const Text(
+                    Text(
                       'Bölüm',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
+                        color: theme.textTheme.bodyLarge?.color,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -1273,16 +1418,22 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       onTap: _showDepartmentBottomSheet,
                       child: Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF2D2D2D)
+                                : const Color(0xFFE5E7EB),
+                          ),
                           borderRadius: BorderRadius.circular(8),
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.book_outlined,
-                              color: Color(0xFF9CA3AF),
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[600]
+                                  : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                             const SizedBox(width: 12),
@@ -1294,14 +1445,18 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: _selectedDepartment.isEmpty 
-                                      ? const Color(0xFF9CA3AF)
-                                      : const Color(0xFF2D3748),
+                                      ? (Theme.of(context).brightness == Brightness.dark
+                                          ? Colors.grey[600]
+                                          : const Color(0xFF9CA3AF))
+                                      : theme.textTheme.bodyLarge?.color,
                                 ),
                               ),
                             ),
-                            const Icon(
+                            Icon(
                               Icons.keyboard_arrow_down,
-                              color: Color(0xFF9CA3AF),
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[600]
+                                  : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                           ],
@@ -1312,12 +1467,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     const SizedBox(height: 20),
                     
                     // Class selection
-                    const Text(
+                    Text(
                       'Sınıf',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
+                        color: theme.textTheme.bodyLarge?.color,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -1325,16 +1480,22 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       onTap: _showClassBottomSheet,
                       child: Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF2D2D2D)
+                                : const Color(0xFFE5E7EB),
+                          ),
                           borderRadius: BorderRadius.circular(8),
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.grade_outlined,
-                              color: Color(0xFF9CA3AF),
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[600]
+                                  : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                             const SizedBox(width: 12),
@@ -1346,14 +1507,18 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: _selectedClass.isEmpty 
-                                      ? const Color(0xFF9CA3AF)
-                                      : const Color(0xFF2D3748),
+                                      ? (Theme.of(context).brightness == Brightness.dark
+                                          ? Colors.grey[600]
+                                          : const Color(0xFF9CA3AF))
+                                      : theme.textTheme.bodyLarge?.color,
                                 ),
                               ),
                             ),
-                            const Icon(
+                            Icon(
                               Icons.keyboard_arrow_down,
-                              color: Color(0xFF9CA3AF),
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[600]
+                                  : const Color(0xFF9CA3AF),
                               size: 20,
                             ),
                           ],
@@ -1364,12 +1529,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     const SizedBox(height: 20),
                     
                     // Bio field
-                    const Text(
+                    Text(
                       'Kısa Bio',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
+                        color: theme.textTheme.bodyLarge?.color,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -1391,12 +1556,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     const SizedBox(height: 20),
                     
                     // Interest Tags
-                    const Text(
+                    Text(
                       'İlgi Alanları',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
+                        color: theme.textTheme.bodyLarge?.color,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -1417,12 +1582,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     const SizedBox(height: 20),
                     
                     // Active Hours
-                    const Text(
+                    Text(
                       'Aktif Zamanlar',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
+                        color: theme.textTheme.bodyLarge?.color,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -1479,7 +1644,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                                 ),
                               )
                             : const Text(
-                                'Profil Bilgilerini Kaydet',
+                                'Hesap Bilgilerini Kaydet',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -1514,18 +1679,23 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         if (label.isNotEmpty) ...[
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF2D3748),
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 8),
         ],
         Container(
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            border: Border.all(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF2D2D2D)
+                  : const Color(0xFFE5E7EB),
+            ),
             borderRadius: BorderRadius.circular(8),
+            color: Theme.of(context).cardColor,
           ),
           child: TextFormField(
             controller: controller,
@@ -1535,15 +1705,20 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             maxLines: maxLines,
             maxLength: maxLength,
             onChanged: onChanged,
+            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(
-                color: Color(0xFF9CA3AF),
+              hintStyle: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[600]
+                    : const Color(0xFF9CA3AF),
                 fontSize: 16,
               ),
               prefixIcon: Icon(
                 icon,
-                color: const Color(0xFF9CA3AF),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[600]
+                    : const Color(0xFF9CA3AF),
                 size: 20,
               ),
               border: InputBorder.none,
@@ -1556,12 +1731,14 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   }
 
   Widget _buildTimeSelector(String label, String time, Function(String) onTimeChanged) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return GestureDetector(
       onTap: () async {
         final TimeOfDay? picked = await showTimePicker(
           context: context,
-          // ignore: unnecessary_brace_in_string_interps
-          initialTime: TimeOfDay.fromDateTime(DateTime.parse('2023-01-01 ${time}:00')),
+          initialTime: TimeOfDay.fromDateTime(DateTime.parse('2023-01-01 $time:00')),
         );
         if (picked != null) {
           final formattedTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
@@ -1570,9 +1747,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       },
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          border: Border.all(
+            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+          ),
           borderRadius: BorderRadius.circular(8),
-          color: Colors.white,
+          color: theme.cardColor,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Column(
@@ -1580,27 +1759,27 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF6B7280),
+                color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
               ),
             ),
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.access_time,
-                  color: Color(0xFF9CA3AF),
+                  color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                   size: 20,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   time,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF2D3748),
+                    color: theme.textTheme.bodyLarge?.color,
                   ),
                 ),
               ],
@@ -1610,5 +1789,5 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       ),
     );
   }
-
 }
+
