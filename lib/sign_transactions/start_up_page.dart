@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'login_page.dart';
 
 class StartupScreen extends StatelessWidget {
@@ -16,12 +17,8 @@ class StartupScreen extends StatelessWidget {
         height: double.infinity,
         child: Stack(
           children: [
-            // Background image - sadece üst kısımda
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: MediaQuery.of(context).size.height * 0.45,
+            // Background image - TÜM EKRANI KAPLAYACAK
+            Positioned.fill(
               child: Container(
                 decoration: const BoxDecoration(
                   image: DecorationImage(
@@ -31,90 +28,120 @@ class StartupScreen extends StatelessWidget {
                 ),
               ),
             ),
-            // Main content with curved bottom
+            // Main content with glassmorphism
             Positioned(
               bottom: 0,
               left: 0,
               right: 0,
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.45,
-                decoration: BoxDecoration(
-                  color: theme.cardColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(50),
-                    topRight: Radius.circular(50),
-                  ),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(50),
+                  topRight: Radius.circular(50),
                 ),
-                padding: const EdgeInsets.all(40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    Text(
-                      'Hoş Geldiniz',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : const Color(0xFF2D3748),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.45,
+                    padding: const EdgeInsets.all(40),
+                    decoration: BoxDecoration(
+                      color: isDark 
+                          ? Colors.black.withValues(alpha: 0.4)
+                          : Colors.white.withValues(alpha: 0.3),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(50),
+                        topRight: Radius.circular(50),
+                      ),
+                      border: Border.all(
+                        color: isDark 
+                            ? Colors.white.withValues(alpha: 0.2)
+                            : Colors.white.withValues(alpha: 0.5),
+                        width: 1.5,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'UniHub\'a hoş geldiniz. Üniversite hayatınızı kolaylaştıracağız.',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        height: 1.4,
-                      ),
-                    ),
-                    const Spacer(),
-                    // Continue button with arrow image
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2563EB),
-                          borderRadius: BorderRadius.circular(25),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 10),
+                        Text(
+                          'Hoş Geldiniz',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
                         ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(25),
-                             onTap: () {
-                               Navigator.push(
-                                 context,
-                                 MaterialPageRoute(
-                                   builder: (context) => const LoginPage(),
-                                 ),
-                               );
-                             },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Text(
-                                    'Devam Et',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'UniHub\'a hoş geldiniz. Üniversite hayatınızı kolaylaştıracağız.',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: isDark 
+                                ? Colors.white.withValues(alpha: 0.8)
+                                : Colors.black.withValues(alpha: 0.7),
+                            height: 1.4,
+                          ),
+                        ),
+                        const Spacer(),
+                        // Continue button with arrow image
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(25),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF2563EB).withValues(alpha: 0.4),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(25),
+                                 onTap: () {
+                                   Navigator.push(
+                                     context,
+                                     MaterialPageRoute(
+                                       builder: (context) => const LoginPage(),
+                                     ),
+                                   );
+                                 },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text(
+                                        'Devam Et',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Image.asset(
+                                        'assets/images/arrow.png',
+                                        width: 18,
+                                        height: 18,
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 8),
-                                  Image.asset(
-                                    'assets/images/arrow.png',
-                                    width: 18,
-                                    height: 18,
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

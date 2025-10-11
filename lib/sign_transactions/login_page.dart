@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:ui';
 import 'register_page.dart';
 import '../home/home_page.dart';
 import 'forget_password.dart';
@@ -150,12 +151,8 @@ class _LoginPageState extends State<LoginPage> {
         height: double.infinity,
         child: Stack(
           children: [
-            // Background image - sadece üst kısımda
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: MediaQuery.of(context).size.height * 0.25,
+            // Background image - TÜM EKRANI KAPLAYACAK
+            Positioned.fill(
               child: Container(
                 decoration: const BoxDecoration(
                   image: DecorationImage(
@@ -165,326 +162,401 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-            // Main content with curved bottom
+            // Main content with glassmorphism - ALT TARAFA SABİT
             Positioned(
               bottom: 0,
               left: 0,
               right: 0,
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.75,
-                decoration: BoxDecoration(
-                  color: theme.cardColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(50),
-                    topRight: Radius.circular(50),
-                  ),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(50),
+                  topRight: Radius.circular(50),
                 ),
-                padding: const EdgeInsets.all(40),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 20),
-                      Text(
-                        'Giriş Yap',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: theme.textTheme.bodyLarge?.color,
-                        ),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.75,
+                    padding: const EdgeInsets.all(40),
+                    decoration: BoxDecoration(
+                      color: isDark 
+                          ? Colors.black.withValues(alpha: 0.4)
+                          : Colors.white.withValues(alpha: 0.3),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(50),
+                        topRight: Radius.circular(50),
                       ),
-                      Container(
-                        width: 40,
-                        height: 3,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF2563EB),
-                          borderRadius: BorderRadius.all(Radius.circular(2)),
-                        ),
-                        margin: const EdgeInsets.only(top: 8),
+                      border: Border.all(
+                        color: isDark 
+                            ? Colors.white.withValues(alpha: 0.2)
+                            : Colors.white.withValues(alpha: 0.5),
+                        width: 1.5,
                       ),
-                      const SizedBox(height: 40),
-                      
-                      // Email field
-                      Text(
-                        'E-posta',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: TextField(
-                          controller: _emailController,
-                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
-                          decoration: InputDecoration(
-                            hintText: 'ogrenci@universite.edu.tr',
-                            hintStyle: TextStyle(
-                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
-                              fontSize: 16,
-                            ),
-                            prefixIcon: Icon(
-                              Icons.email_outlined,
-                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
-                              size: 20,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Password field
-                      Text(
-                        'Şifre',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: TextField(
-                          controller: _passwordController,
-                          obscureText: !_isPasswordVisible,
-                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
-                          decoration: InputDecoration(
-                            hintText: 'Şifrenizi giriniz',
-                            hintStyle: TextStyle(
-                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
-                              fontSize: 16,
-                            ),
-                            prefixIcon: Icon(
-                              Icons.lock_outline,
-                              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
-                              size: 20,
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                                color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
-                                size: 20,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _isPasswordVisible = !_isPasswordVisible;
-                                });
-                              },
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Remember me and Forgot password
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  color: _rememberMe ? const Color(0xFF2563EB) : (isDark ? const Color(0xFF1E1E1E) : Colors.white),
-                                  border: Border.all(
-                                    color: _rememberMe ? const Color(0xFF2563EB) : (isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB)),
-                                    width: 2,
-                                  ),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(4),
-                                    onTap: () {
-                                      setState(() {
-                                        _rememberMe = !_rememberMe;
-                                      });
-                                    },
-                                    child: _rememberMe
-                                        ? const Icon(
-                                            Icons.check,
-                                            color: Colors.white,
-                                            size: 14,
-                                          )
-                                        : null,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
+                          const SizedBox(height: 20),
                               Text(
-                                'Beni Hatırla',
+                                'Giriş Yap',
                                 style: TextStyle(
-                                  fontSize: 14,
-                                  color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? Colors.white : Colors.black87,
                                 ),
                               ),
-                            ],
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const ForgetPasswordPage(),
-                                ),
-                              );
-                            },
-                            child: const Text(
-                              'Şifreni mi Unuttun?',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF2563EB),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 20),
-                      
-                      // Error message
-                      if (_errorMessage.isNotEmpty)
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(12),
-                          margin: const EdgeInsets.only(bottom: 20),
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade50,
-                            border: Border.all(color: Colors.red.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.error, color: Colors.red.shade600, size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  _errorMessage,
-                                  style: TextStyle(
-                                    color: Colors.red.shade700,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                      const SizedBox(height: 20),
-                      
-                      // Login button
-                      SizedBox(
-                        width: double.infinity,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2563EB),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(8),
-                            onTap: _isLoading ? null : () {
-                              if (_emailController.text.trim().isEmpty || 
-                                  _passwordController.text.trim().isEmpty) {
-                                setState(() {
-                                  _errorMessage = 'Lütfen email ve şifre alanlarını doldurun.';
-                                });
-                                return;
-                              }
-                              _signInWithEmailAndPassword();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              child: Center(
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                        ),
-                                      )
-                                      : const Text(
-                                          'Giriş Yap',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                              ),
-                            ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 30),
-                      
-                      // Sign up link
-                      Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Hesabınız yok mu? ",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const RegisterPage(),
-                                  ),
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                minimumSize: Size.zero,
-                                padding: EdgeInsets.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: const Text(
-                                'Kayıt Ol',
-                                style: TextStyle(
-                                  fontSize: 14,
+                              Container(
+                                width: 40,
+                                height: 3,
+                                decoration: const BoxDecoration(
                                   color: Color(0xFF2563EB),
+                                  borderRadius: BorderRadius.all(Radius.circular(2)),
+                                ),
+                                margin: const EdgeInsets.only(top: 8),
+                              ),
+                              const SizedBox(height: 32),
+                              
+                              // Email field
+                              Text(
+                                'E-posta',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: isDark ? Colors.white.withValues(alpha: 0.9) : Colors.black87,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                              const SizedBox(height: 12),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.1)
+                                      : Colors.black.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.2)
+                                        : Colors.black.withValues(alpha: 0.1),
+                                  ),
+                                ),
+                                child: TextField(
+                                  controller: _emailController,
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black87,
+                                    fontSize: 16,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: 'ogrenci@universite.edu.tr',
+                                    hintStyle: TextStyle(
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.5)
+                                          : Colors.black.withValues(alpha: 0.4),
+                                      fontSize: 16,
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.email_outlined,
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.7)
+                                          : Colors.black.withValues(alpha: 0.5),
+                                      size: 20,
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  ),
+                                  keyboardType: TextInputType.emailAddress,
+                                ),
+                              ),
+                      
+                              
+                              const SizedBox(height: 24),
+                              
+                              // Password field
+                              Text(
+                                'Şifre',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: isDark ? Colors.white.withValues(alpha: 0.9) : Colors.black87,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.1)
+                                      : Colors.black.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.2)
+                                        : Colors.black.withValues(alpha: 0.1),
+                                  ),
+                                ),
+                                child: TextField(
+                                  controller: _passwordController,
+                                  obscureText: !_isPasswordVisible,
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black87,
+                                    fontSize: 16,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: 'Şifrenizi giriniz',
+                                    hintStyle: TextStyle(
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.5)
+                                          : Colors.black.withValues(alpha: 0.4),
+                                      fontSize: 16,
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.lock_outline,
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.7)
+                                          : Colors.black.withValues(alpha: 0.5),
+                                      size: 20,
+                                    ),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                                        color: isDark
+                                            ? Colors.white.withValues(alpha: 0.7)
+                                            : Colors.black.withValues(alpha: 0.5),
+                                        size: 20,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _isPasswordVisible = !_isPasswordVisible;
+                                        });
+                                      },
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  ),
+                                ),
+                              ),
+                      
+                              
+                              const SizedBox(height: 24),
+                              
+                              // Remember me and Forgot password
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 20,
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                          color: _rememberMe
+                                              ? const Color(0xFF2563EB)
+                                              : Colors.transparent,
+                                          border: Border.all(
+                                            color: _rememberMe
+                                                ? const Color(0xFF2563EB)
+                                                : (isDark
+                                                    ? Colors.white.withValues(alpha: 0.5)
+                                                    : Colors.black.withValues(alpha: 0.3)),
+                                            width: 2,
+                                          ),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            borderRadius: BorderRadius.circular(4),
+                                            onTap: () {
+                                              setState(() {
+                                                _rememberMe = !_rememberMe;
+                                              });
+                                            },
+                                            child: _rememberMe
+                                                ? const Icon(
+                                                    Icons.check,
+                                                    color: Colors.white,
+                                                    size: 14,
+                                                  )
+                                                : null,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Beni Hatırla',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: isDark
+                                              ? Colors.white.withValues(alpha: 0.8)
+                                              : Colors.black.withValues(alpha: 0.7),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const ForgetPasswordPage(),
+                                        ),
+                                      );
+                                    },
+                                    child: const Text(
+                                      'Şifreni mi Unuttun?',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Color(0xFF2563EB),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      
+                              
+                              // Error message
+                              if (_errorMessage.isNotEmpty)
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  margin: const EdgeInsets.only(top: 20, bottom: 10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withValues(alpha: 0.15),
+                                    border: Border.all(
+                                      color: Colors.red.withValues(alpha: 0.4),
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.error, color: Colors.red.shade400, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          _errorMessage,
+                                          style: TextStyle(
+                                            color: isDark ? Colors.red.shade300 : Colors.red.shade700,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                              const SizedBox(height: 24),
+                              
+                              // Login button
+                              SizedBox(
+                                width: double.infinity,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF2563EB).withValues(alpha: 0.4),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(12),
+                                      onTap: _isLoading
+                                          ? null
+                                          : () {
+                                              if (_emailController.text.trim().isEmpty ||
+                                                  _passwordController.text.trim().isEmpty) {
+                                                setState(() {
+                                                  _errorMessage =
+                                                      'Lütfen email ve şifre alanlarını doldurun.';
+                                                });
+                                                return;
+                                              }
+                                              _signInWithEmailAndPassword();
+                                            },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        child: Center(
+                                          child: _isLoading
+                                              ? const SizedBox(
+                                                  width: 20,
+                                                  height: 20,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation<Color>(Colors.white),
+                                                  ),
+                                                )
+                                              : const Text(
+                                                  'Giriş Yap',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                      
+                              
+                              const SizedBox(height: 28),
+                              
+                              // Sign up link
+                              Center(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Hesabınız yok mu? ",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: isDark
+                                            ? Colors.white.withValues(alpha: 0.8)
+                                            : Colors.black.withValues(alpha: 0.7),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => const RegisterPage(),
+                                          ),
+                                        );
+                                      },
+                                      style: TextButton.styleFrom(
+                                        minimumSize: Size.zero,
+                                        padding: EdgeInsets.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: const Text(
+                                        'Kayıt Ol',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Color(0xFF2563EB),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
