@@ -29,9 +29,9 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   List<String> _interestTags = [];
   Map<String, String> _activeHours = {'start': '19:00', 'end': '22:00'};
   DateTime? _birthDate;
-  String? _profileImageUrl;
+  List<String?> _profileImageUrls = [null, null, null, null];
   String? _coverImageUrl;
-  File? _selectedProfilImage;
+  List<File?> _selectedProfileImages = [null, null, null, null];
   File? _selectedCoverImage;
   bool _isLoading = false;
   bool _isSaving = false;
@@ -199,7 +199,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                 _birthDate = DateTime.parse(data['birthDate']);
               }
             } catch (e) {
-              print('AccountInfo: Error parsing birthDate: $e');
+              debugPrint('AccountInfo: Error parsing birthDate: $e');
             }
           }
           
@@ -211,7 +211,18 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
           _bioController.text = data['bio'] ?? '';
           _interestTags = List<String>.from(data['interestTags'] ?? []);
           _activeHours = Map<String, String>.from(data['activeHours'] ?? {'start': '19:00', 'end': '22:00'});
-          _profileImageUrl = data['profileImageUrl'];
+          
+          // Load profile images (support old single image and new multiple images)
+          if (data['profileImages'] != null && data['profileImages'] is List) {
+            final images = List<String>.from(data['profileImages']);
+            for (int i = 0; i < images.length && i < 4; i++) {
+              _profileImageUrls[i] = images[i];
+            }
+          } else if (data['profileImageUrl'] != null) {
+            // Backward compatibility: convert old single image to array
+            _profileImageUrls[0] = data['profileImageUrl'];
+          }
+          
           _coverImageUrl = data['coverImageUrl'];
           
           _interestTagsController.text = _interestTags.join(', ');
@@ -805,8 +816,109 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
     );
   }
   
-  Future<void> _pickImage() async {
+  Widget _buildProfileImageSlot(int index, bool isDark) {
+    final hasImage = _selectedProfileImages[index] != null || _profileImageUrls[index] != null;
+    
+    return GestureDetector(
+      onTap: () => _pickProfileImage(index),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF2D2D2D) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: hasImage 
+              ? const Color(0xFF2563EB) 
+              : (isDark ? const Color(0xFF404040) : const Color(0xFFE5E7EB)),
+            width: hasImage ? 2 : 1,
+          ),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Image or placeholder
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: _selectedProfileImages[index] != null
+                  ? Image.file(
+                      _selectedProfileImages[index]!,
+                      fit: BoxFit.cover,
+                    )
+                  : _profileImageUrls[index] != null
+                      ? Image.network(
+                          _profileImageUrls[index]!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return _buildPlaceholder(index, isDark);
+                          },
+                        )
+                      : _buildPlaceholder(index, isDark),
+            ),
+            
+            // Delete button overlay
+            if (hasImage)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: GestureDetector(
+                  onTap: () async {
+                    setState(() {
+                      _selectedProfileImages[index] = null;
+                      _profileImageUrls[index] = null;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder(int index, bool isDark) {
+    return Container(
+      color: isDark ? const Color(0xFF2D2D2D) : Colors.grey[100],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.add_photo_alternate_outlined,
+            size: 32,
+            color: isDark ? Colors.grey[600] : Colors.grey[400],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Fotoğraf ${index + 1}',
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? Colors.grey[600] : Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickProfileImage(int index) async {
     try {
+      debugPrint('AccountInfo: Picking profile image for index $index');
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 512,
@@ -816,10 +928,11 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
       
       if (image != null) {
         setState(() {
-          _selectedProfilImage = File(image.path);
+          _selectedProfileImages[index] = File(image.path);
         });
       }
     } catch (e) {
+      debugPrint('AccountInfo: Error picking image: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -857,9 +970,9 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
     }
   }
 
-  Future<String?> _uploadImage() async {
-    if (_selectedProfilImage == null && _selectedCoverImage == null) return _profileImageUrl;
-
+  Future<void> _uploadImages() async {
+    debugPrint('AccountInfo: Starting image upload');
+    
     // .env dosyasından Cloudinary bilgilerini al
     final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'];
     final uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET']; 
@@ -873,28 +986,35 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
           ),
         );
       }
-      return null;
+      return;
     }
 
     try {
       final cloudinary = CloudinaryPublic(cloudName, uploadPreset, cache: false);
 
-      if (_selectedProfilImage != null) {
-        final resProfile = await cloudinary.uploadFile(
-          CloudinaryFile.fromFile(_selectedProfilImage!.path, resourceType: CloudinaryResourceType.Image),
-        );
-        _profileImageUrl = resProfile.secureUrl;
+      // Upload profile images
+      for (int i = 0; i < _selectedProfileImages.length; i++) {
+        if (_selectedProfileImages[i] != null) {
+          debugPrint('AccountInfo: Uploading profile image $i');
+          final res = await cloudinary.uploadFile(
+            CloudinaryFile.fromFile(_selectedProfileImages[i]!.path, resourceType: CloudinaryResourceType.Image),
+          );
+          _profileImageUrls[i] = res.secureUrl;
+          debugPrint('AccountInfo: Profile image $i uploaded: ${res.secureUrl}');
+        }
       }
 
+      // Upload cover image
       if (_selectedCoverImage != null) {
+        debugPrint('AccountInfo: Uploading cover image');
         final resCover = await cloudinary.uploadFile(
           CloudinaryFile.fromFile(_selectedCoverImage!.path, resourceType: CloudinaryResourceType.Image),
         );
         _coverImageUrl = resCover.secureUrl;
+        debugPrint('AccountInfo: Cover image uploaded');
       }
-
-      return _profileImageUrl;
     } on CloudinaryException catch (err) {
+      debugPrint('AccountInfo: Cloudinary error: ${err.message}');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -903,7 +1023,6 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
           ),
         );
       }
-      return null;
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -939,7 +1058,12 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        await _uploadImage();
+        await _uploadImages();
+
+        // Filter out null values from profile images
+        final profileImagesList = _profileImageUrls.where((url) => url != null).toList();
+        
+        debugPrint('AccountInfo: Saving profile with ${profileImagesList.length} images');
 
         await FirebaseFirestore.instance
             .collection('users')
@@ -955,7 +1079,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
           'interestTags': _interestTags,
           'activeHours': _activeHours,
           'email': user.email,
-          'profileImageUrl': _profileImageUrl,
+          'profileImages': profileImagesList,
           'coverImageUrl': _coverImageUrl,
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
@@ -1116,85 +1240,6 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                     ),
                                   ),
                                 ),
-                              // Profile Image
-                              Positioned(
-                                left: 20,
-                                bottom: -50,
-                                child: GestureDetector(
-                                  onTap: _pickImage,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width: 4,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.2),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: CircleAvatar(
-                                      radius: 60,
-                                      backgroundColor: Colors.grey[200],
-                                      child: _selectedProfilImage != null
-                                          ? ClipOval(
-                                              child: Image.file(
-                                                _selectedProfilImage!,
-                                                width: 120,
-                                                height: 120,
-                                                fit: BoxFit.cover,
-                                              ),
-                                            )
-                                          : _profileImageUrl != null
-                                              ? ClipOval(
-                                                  child: Image.network(
-                                                    _profileImageUrl!,
-                                                    width: 120,
-                                                    height: 120,
-                                                    fit: BoxFit.cover,
-                                                    errorBuilder: (context, error, stackTrace) => 
-                                                      Icon(
-                                                        Icons.person,
-                                                        size: 60,
-                                                        color: Colors.grey[400],
-                                                      ),
-                                                  ),
-                                                )
-                                              : Icon(
-                                                  Icons.person,
-                                                  size: 60,
-                                                  color: Colors.grey[400],
-                                                ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              // Camera icon for profile
-                              if (_selectedProfilImage == null && _profileImageUrl == null)
-                                Positioned(
-                                  left: 90,
-                                  bottom: -40,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF2563EB),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: const Icon(
-                                      Icons.camera_alt,
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
-                                  ),
-                                ),
                             ],
                           ),
                           const SizedBox(height: 60),
@@ -1249,51 +1294,60 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                     ],
                                   ],
                                 ),
-                                const SizedBox(height: 12),
-                                // Profile photo buttons
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton.icon(
-                                        onPressed: _pickImage,
-                                        icon: const Icon(Icons.person, size: 18),
-                                        label: const Text('Profil Değiştir'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF2563EB),
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(vertical: 12),
-                                          elevation: 0,
+                                const SizedBox(height: 20),
+                                
+                                // Profile Photos Grid
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF1E1E1E) : Colors.grey[50],
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.photo_library_outlined, color: Color(0xFF2563EB), size: 20),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Profil Fotoğrafları',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: theme.textTheme.bodyLarge?.color,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Maksimum 4 fotoğraf ekleyebilirsiniz',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: isDark ? Colors.grey[400] : Colors.grey[600],
                                         ),
                                       ),
-                                    ),
-                                    if (_selectedProfilImage != null || _profileImageUrl != null) ...[
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: OutlinedButton.icon(
-                                          onPressed: () async {
-                                            setState(() {
-                                              _selectedProfilImage = null;
-                                              _profileImageUrl = null;
-                                            });
-                                            final user = FirebaseAuth.instance.currentUser;
-                                            if (user != null) {
-                                              await FirebaseFirestore.instance
-                                                  .collection('users')
-                                                  .doc(user.uid)
-                                                  .update({'profileImageUrl': null});
-                                            }
-                                          },
-                                          icon: const Icon(Icons.delete_outline, size: 18),
-                                          label: const Text('Profil Kaldır'),
-                                          style: OutlinedButton.styleFrom(
-                                            foregroundColor: Colors.red,
-                                            side: const BorderSide(color: Colors.red),
-                                            padding: const EdgeInsets.symmetric(vertical: 12),
-                                          ),
+                                      const SizedBox(height: 16),
+                                      GridView.builder(
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 2,
+                                          crossAxisSpacing: 12,
+                                          mainAxisSpacing: 12,
+                                          childAspectRatio: 1,
                                         ),
+                                        itemCount: 4,
+                                        itemBuilder: (context, index) {
+                                          return _buildProfileImageSlot(index, isDark);
+                                        },
                                       ),
                                     ],
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
