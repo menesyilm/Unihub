@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'sign_transactions/start_up_page.dart';
 import 'firebase/firebase_options.dart';
 import 'profile/theme/theme_service.dart';
@@ -46,6 +47,15 @@ class MyApp extends StatelessWidget {
             home: const StartupScreen(),
             debugShowCheckedModeBanner: false,
             themeMode: themeService.themeMode,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('tr', 'TR'),
+            ],
+            locale: const Locale('tr', 'TR'),
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(
                 seedColor: const Color(0xFF2563EB),
