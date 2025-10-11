@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../home/home_page.dart';
 import '../profile/profile_page.dart';
@@ -114,13 +115,13 @@ class _CustomBottomNavigationState extends State<CustomBottomNavigation> {
         // const kaldırıldı çünkü dinamik ikon kullanıyoruz
         items: [
           const BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
+            icon: FaIcon(FontAwesomeIcons.house),
+            activeIcon: FaIcon(FontAwesomeIcons.house),
             label: 'Ana Sayfa',
           ),
           const BottomNavigationBarItem(
-            icon: Icon(Icons.people_outline),
-            activeIcon: Icon(Icons.people),
+            icon: FaIcon(FontAwesomeIcons.users),
+            activeIcon: FaIcon(FontAwesomeIcons.users),
             label: 'Arkadaşlar',
           ),
           BottomNavigationBarItem(
@@ -200,8 +201,8 @@ class _AvatarIcon extends StatelessWidget {
           backgroundImage: provider, // varsa direkt bu kullanılıyor (flicker yok)
           // provider yoksa fallback ikon
           child: provider == null
-              ? Icon(
-                  Icons.person,
+              ? FaIcon(
+                  FontAwesomeIcons.user,
                   size: size * 0.6,
                   color: isActive ? Colors.white : const Color(0xFF2563EB),
                 )

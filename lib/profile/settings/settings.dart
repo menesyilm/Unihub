@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../account_transactions/account_menu.dart';
 import '../security_privacy/security_privacy_menu.dart';
 import '../theme/theme_settings.dart';
+import '../social_media/social_media_menu.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -89,7 +91,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: Column(
                   children: [
                     _buildProfileOption(
-                      icon: Icons.account_circle_outlined,
+                      icon: FontAwesomeIcons.user,
                       title: 'Hesabın',
                       subtitle: 'Hesap ayarları ve yönetimi',
                       onTap: () {
@@ -105,7 +107,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _buildDivider(),
                     _buildProfileOption(
-                      icon: Icons.security_outlined,
+                      icon: FontAwesomeIcons.shieldHalved,
                       title: 'Güvenlik & Gizlilik',
                       subtitle:
                           'Engellenenler, görünürlük ve gizlilik ayarları',
@@ -120,7 +122,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _buildDivider(),
                     _buildProfileOption(
-                      icon: Icons.notifications_outlined,
+                      icon: FontAwesomeIcons.bell,
                       title: 'Bildirimler',
                       subtitle: 'Bildirim tercihlerinizi ayarlayın',
                       onTap: () {
@@ -129,16 +131,21 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _buildDivider(),
                     _buildProfileOption(
-                      icon: Icons.share_outlined,
+                      icon: FontAwesomeIcons.shareNodes,
                       title: 'Sosyal Bağlantılar',
-                      subtitle: 'Instagram, Telegram ve diğer sosyal medya',
+                      subtitle: 'Instagram, Facebook, Twitter ve diğer sosyal medya',
                       onTap: () {
-                        _showSocialConnections();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SocialMediaMenuPage(),
+                          ),
+                        );
                       },
                     ),
                     _buildDivider(),
                     _buildProfileOption(
-                      icon: Icons.help_outline,
+                      icon: FontAwesomeIcons.circleQuestion,
                       title: 'Yardım & Destek',
                       subtitle: 'Sık sorulan sorular ve destek',
                       onTap: () {
@@ -152,7 +159,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _buildDivider(),
                     _buildProfileOption(
-                      icon: Icons.dark_mode_outlined,
+                      icon: FontAwesomeIcons.moon,
                       title: 'Karanlık Mod',
                       subtitle: 'Tema ayarlarını düzenleyin',
                       onTap: () {
@@ -200,7 +207,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     color: const Color(0xFF2563EB).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: const Color(0xFF2563EB), size: 24),
+                  child: Center(
+                    child: FaIcon(icon, color: const Color(0xFF2563EB), size: 22),
+                  ),
                 ),
                 const SizedBox(width: 15),
                 Expanded(
@@ -226,7 +235,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+                FaIcon(FontAwesomeIcons.chevronRight, size: 14, color: Colors.grey[400]),
               ],
             ),
           ),
@@ -288,21 +297,21 @@ class _SettingsPageState extends State<SettingsPage> {
                   _buildNotificationToggle(
                     'Yeni Mesajlar',
                     'Yeni mesaj bildirimleri al',
-                    Icons.message_outlined,
+                    FontAwesomeIcons.message,
                     userData?['notifications']?['messages'] ?? true,
                     (value) => _updateNotificationSetting('messages', value),
                   ),
                   _buildNotificationToggle(
                     'Oda Davetleri',
                     'Oda davet bildirimleri al',
-                    Icons.meeting_room_outlined,
+                    FontAwesomeIcons.doorOpen,
                     userData?['notifications']?['roomInvites'] ?? true,
                     (value) => _updateNotificationSetting('roomInvites', value),
                   ),
                   _buildNotificationToggle(
                     'Sistem Bildirimleri',
                     'Sistem güncellemeleri ve duyurular',
-                    Icons.notifications_outlined,
+                    FontAwesomeIcons.bell,
                     userData?['notifications']?['system'] ?? true,
                     (value) => _updateNotificationSetting('system', value),
                   ),
@@ -314,72 +323,6 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
   }
-
-  void _showSocialConnections() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Sosyal Bağlantılar',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF2D3748),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Sosyal medya hesaplarınız sadece karşılıklı eşleşme durumunda görünür.',
-                    style: TextStyle(
-                      fontSize: 14, 
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildSocialConnection(
-                    'Instagram',
-                    Icons.camera_alt_outlined,
-                    userData?['socialConnections']?['instagram'] ?? '',
-                  ),
-                  _buildSocialConnection(
-                    'Telegram',
-                    Icons.telegram,
-                    userData?['socialConnections']?['telegram'] ?? '',
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
 
   Widget _buildNotificationToggle(
     String title,
@@ -403,7 +346,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   color: const Color(0xFF2563EB).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: const Color(0xFF2563EB), size: 20),
+                child: Center(
+                  child: FaIcon(icon, color: const Color(0xFF2563EB), size: 18),
+                ),
               ),
               const SizedBox(width: 15),
               Expanded(
@@ -440,82 +385,11 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildSocialConnection(
-    String platform,
-    IconData icon,
-    String username,
-  ) {
-    return Builder(
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2563EB).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: const Color(0xFF2563EB), size: 20),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      platform,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : const Color(0xFF2D3748),
-                      ),
-                    ),
-                    Text(
-                      username.isEmpty ? 'Bağlantı yok' : username,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: username.isEmpty
-                            ? (isDark ? Colors.grey[500] : Colors.grey[500])
-                            : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  _editSocialConnection(platform.toLowerCase());
-                },
-                icon: Icon(
-                  username.isEmpty ? Icons.add : Icons.edit,
-                  color: const Color(0xFF2563EB),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-
   void _updateNotificationSetting(String type, bool value) {
     // Implementation for notification setting update
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('$type bildirim ayarı güncellendi')));
-  }
-
-  void _editSocialConnection(String platform) {
-    // Implementation for editing social connection
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$platform bağlantısı düzenleme sayfası yakında')),
-    );
   }
 }
 

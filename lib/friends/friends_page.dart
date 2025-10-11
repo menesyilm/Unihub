@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'friends_service.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class FriendsPage extends StatefulWidget {
   const FriendsPage({super.key});
@@ -55,7 +56,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
             decoration: const InputDecoration(
               labelText: 'E-posta Adresi',
               hintText: 'arkadas@example.com',
-              prefixIcon: Icon(Icons.email),
+              prefixIcon: Icon(FontAwesomeIcons.envelope),
             ),
             keyboardType: TextInputType.emailAddress,
           ),
@@ -132,7 +133,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_add),
+            icon: const Icon(FontAwesomeIcons.userPlus),
             onPressed: _showAddFriendDialog,
             tooltip: 'Arkadaş Ekle',
           ),
@@ -214,7 +215,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return _buildEmptyState(
-            icon: Icons.people_outline,
+            icon: FontAwesomeIcons.peopleGroup,
             title: 'Henüz Arkadaşınız Yok',
             subtitle: 'Sağ üstteki + butonuna tıklayarak arkadaş ekleyin',
           );
@@ -271,7 +272,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return _buildEmptyState(
-            icon: Icons.inbox_outlined,
+            icon: FontAwesomeIcons.inbox,
             title: 'Bekleyen İstek Yok',
             subtitle: 'Arkadaşlık istekleriniz burada görünecek',
           );
@@ -283,7 +284,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
 
         if (requests.isEmpty) {
           return _buildEmptyState(
-            icon: Icons.inbox_outlined,
+            icon: FontAwesomeIcons.inbox,
             title: 'Bekleyen İstek Yok',
             subtitle: 'Arkadaşlık istekleriniz burada görünecek',
           );
@@ -409,7 +410,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
           ],
         ),
         trailing: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert),
+          icon: const Icon(FontAwesomeIcons.ellipsis),
           onSelected: (value) async {
             if (value == 'message') {
               // Mesaj gönderme özelliği eklenebilir
@@ -453,7 +454,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
               value: 'message',
               child: Row(
                 children: [
-                  Icon(Icons.message, size: 20),
+                  Icon(FontAwesomeIcons.message, size: 20),
                   SizedBox(width: 12),
                   Text('Mesaj Gönder'),
                 ],
@@ -463,7 +464,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
               value: 'remove',
               child: Row(
                 children: [
-                  Icon(Icons.person_remove, size: 20, color: Colors.red),
+                  Icon(FontAwesomeIcons.userXmark, size: 20, color: Colors.red),
                   SizedBox(width: 12),
                   Text('Arkadaşlığı Kaldır', style: TextStyle(color: Colors.red)),
                 ],
@@ -528,7 +529,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(Icons.close, color: Colors.red),
+              icon: const FaIcon(FontAwesomeIcons.xmark, color: Colors.red, size: 18),
               onPressed: () async {
                 await FriendsService.instance.rejectFriendRequest(requestId);
                 if (mounted) {
@@ -540,7 +541,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
               tooltip: 'Reddet',
             ),
             IconButton(
-              icon: const Icon(Icons.check, color: Colors.green),
+              icon: const FaIcon(FontAwesomeIcons.check, color: Colors.green, size: 18),
               onPressed: () async {
                 await FriendsService.instance.acceptFriendRequest(requestId);
                 if (mounted) {
