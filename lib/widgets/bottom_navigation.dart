@@ -144,11 +144,14 @@ class MainNavigationWrapper extends StatefulWidget {
 class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    HomeContent(),
-    FriendsPage(),
-    ProfilePage(),
-  ];
+  List<Widget> get _pages {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    return [
+      const HomeContent(),
+      const FriendsPage(),
+      ProfilePage(userId: userId),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
