@@ -16,6 +16,9 @@ class ProfileInformationPage extends StatefulWidget {
 class _ProfileInformationPageState extends State<ProfileInformationPage> {
   Map<String, dynamic>? userData;
   bool isLoading = true;
+  List<String> profileImages = [];
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
 
   @override
   void initState() {
@@ -23,22 +26,40 @@ class _ProfileInformationPageState extends State<ProfileInformationPage> {
     _loadUserData();
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadUserData() async {
     try {
-      print('ProfileInformation: Loading user data for userId: ${widget.userId}');
+      debugPrint('ProfileInformation: Loading user data for userId: ${widget.userId}');
       final doc = await FirebaseFirestore.instance
           .collection('users')
           .doc(widget.userId)
           .get();
 
       if (mounted) {
+        final data = doc.data();
+        
+        // Load profile images
+        if (data?['profileImages'] != null && data!['profileImages'] is List) {
+          profileImages = List<String>.from(data['profileImages']);
+        } else if (data?['profileImageUrl'] != null) {
+          // Backward compatibility
+          profileImages = [data!['profileImageUrl']];
+        }
+        
+        debugPrint('ProfileInformation: Loaded ${profileImages.length} profile images');
+        
         setState(() {
-          userData = doc.data();
+          userData = data;
           isLoading = false;
         });
       }
     } catch (e) {
-      print('ProfileInformation: Error loading user data: $e');
+      debugPrint('ProfileInformation: Error loading user data: $e');
       if (mounted) {
         setState(() {
           isLoading = false;
@@ -142,51 +163,91 @@ class _ProfileInformationPageState extends State<ProfileInformationPage> {
                       ],
                     ),
                   ),
-                  // Profile Photo positioned at the bottom center
+                  // Profile Photo PageView positioned at the bottom center
                   Positioned(
                     bottom: 0,
                     left: 0,
                     right: 0,
                     child: Center(
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          border: Border.all(
+                      child: GestureDetector(
+                        onTap: () {
+                          if (profileImages.isNotEmpty) {
+                            _showFullScreenImages(context);
+                          }
+                        },
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
                             color: Colors.white,
-                            width: 4,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 4,
                             ),
-                          ],
-                        ),
-                        child: userData!['profileImageUrl'] != null
-                            ? ClipOval(
-                                child: Image.network(
-                                  userData!['profileImageUrl'],
-                                  width: 100,
-                                  height: 100,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Icon(
-                                      Icons.person,
-                                      size: 50,
-                                      color: Color(0xFF2563EB),
-                                    );
-                                  },
-                                ),
-                              )
-                            : const Icon(
-                                Icons.person,
-                                size: 50,
-                                color: Color(0xFF2563EB),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
                               ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              ClipOval(
+                                child: profileImages.isNotEmpty
+                                    ? Image.network(
+                                        profileImages[0],
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Icon(
+                                            Icons.person,
+                                            size: 50,
+                                            color: Color(0xFF2563EB),
+                                          );
+                                        },
+                                      )
+                                    : const Icon(
+                                        Icons.person,
+                                        size: 50,
+                                        color: Color(0xFF2563EB),
+                                      ),
+                              ),
+                              // Image count indicator
+                              if (profileImages.length > 1)
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF2563EB),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: Colors.white, width: 2),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.photo_library, size: 10, color: Colors.white),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          '${profileImages.length}',
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -769,6 +830,103 @@ class _ProfileInformationPageState extends State<ProfileInformationPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showFullScreenImages(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          body: Stack(
+            children: [
+              PageView.builder(
+                controller: _pageController,
+                itemCount: profileImages.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentPage = index;
+                  });
+                },
+                itemBuilder: (context, index) {
+                  return Center(
+                    child: InteractiveViewer(
+                      minScale: 0.5,
+                      maxScale: 4.0,
+                      child: Image.network(
+                        profileImages[index],
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Icon(
+                              Icons.error_outline,
+                              color: Colors.white,
+                              size: 64,
+                            ),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                              color: Colors.white,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+              // Close button
+              SafeArea(
+                child: Positioned(
+                  top: 16,
+                  left: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                ),
+              ),
+              // Page indicator
+              if (profileImages.length > 1)
+                Positioned(
+                  bottom: 32,
+                  left: 0,
+                  right: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      profileImages.length,
+                      (index) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: _currentPage == index ? 24 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: _currentPage == index
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
