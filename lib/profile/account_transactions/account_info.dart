@@ -17,7 +17,6 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
   final TextEditingController _departmentController = TextEditingController();
   final TextEditingController _classController = TextEditingController();
@@ -29,6 +28,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   String _selectedClass = '';
   List<String> _interestTags = [];
   Map<String, String> _activeHours = {'start': '19:00', 'end': '22:00'};
+  DateTime? _birthDate;
   String? _profileImageUrl;
   String? _coverImageUrl;
   File? _selectedProfilImage;
@@ -189,7 +189,20 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
           final data = doc.data()!;
           _firstNameController.text = data['firstName'] ?? '';
           _lastNameController.text = data['lastName'] ?? '';
-          _ageController.text = data['age']?.toString() ?? '';
+          
+          // Load birthDate from Firebase
+          if (data['birthDate'] != null) {
+            try {
+              if (data['birthDate'] is Timestamp) {
+                _birthDate = (data['birthDate'] as Timestamp).toDate();
+              } else if (data['birthDate'] is String) {
+                _birthDate = DateTime.parse(data['birthDate']);
+              }
+            } catch (e) {
+              print('AccountInfo: Error parsing birthDate: $e');
+            }
+          }
+          
           _selectedUniversity = data['university'] ?? '';
           _selectedDepartment = data['department'] ?? '';
           _selectedClass = data['class'] ?? '';
@@ -409,7 +422,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                             university,
                             style: TextStyle(
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF2D3748),
+                              color: isSelected ? const Color(0xFF2563EB) : theme.textTheme.bodyLarge?.color,
                             ),
                           ),
                           trailing: isSelected
@@ -849,7 +862,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
 
     // .env dosyasından Cloudinary bilgilerini al
     final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'];
-    final uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET'];
+    final uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET']; 
 
     if (cloudName == null || uploadPreset == null || cloudName.isEmpty || uploadPreset.isEmpty) {
       if (mounted) {
@@ -934,7 +947,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
             .set({
           'firstName': _firstNameController.text.trim(),
           'lastName': _lastNameController.text.trim(),
-          'age': int.tryParse(_ageController.text.trim()) ?? 0,
+          'birthDate': _birthDate != null ? Timestamp.fromDate(_birthDate!) : null,
           'university': _selectedUniversity,
           'department': _selectedDepartment,
           'class': _selectedClass,
@@ -979,7 +992,6 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
-    _ageController.dispose();
     _bioController.dispose();
     _departmentController.dispose();
     _classController.dispose();
@@ -991,6 +1003,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -1323,22 +1336,97 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                     
                     const SizedBox(height: 20),
                     
-                    _buildFormField(
-                      controller: _ageController,
-                      label: 'Yaş',
-                      hint: 'Yaşınızı giriniz',
-                      icon: Icons.cake_outlined,
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Yaş alanı zorunludur';
+                    // Birth Date Picker
+                    InkWell(
+                      onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: _birthDate ?? DateTime(2000, 1, 1),
+                          firstDate: DateTime(1940),
+                          lastDate: DateTime.now(),
+                          locale: const Locale('tr', 'TR'),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: ColorScheme.light(
+                                  primary: const Color(0xFF2563EB),
+                                  onPrimary: Colors.white,
+                                  surface: theme.cardColor,
+                                  onSurface: theme.textTheme.bodyLarge?.color ?? Colors.black,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null && mounted) {
+                          setState(() {
+                            _birthDate = picked;
+                          });
                         }
-                        final age = int.tryParse(value.trim());
-                        if (age == null || age < 16 || age > 100) {
-                          return 'Geçerli bir yaş giriniz (16-100)';
-                        }
-                        return null;
                       },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          color: theme.cardColor,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.cake_outlined,
+                                color: Color(0xFF2563EB),
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 15),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Doğum Tarihi',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _birthDate != null
+                                        ? '${_birthDate!.day.toString().padLeft(2, '0')}/${_birthDate!.month.toString().padLeft(2, '0')}/${_birthDate!.year}'
+                                        : 'Doğum tarihinizi seçin',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: _birthDate != null
+                                          ? (isDark ? Colors.white : Colors.black87)
+                                          : Colors.grey[500],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              color: const Color(0xFF2563EB),
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     
                     const SizedBox(height: 20),
