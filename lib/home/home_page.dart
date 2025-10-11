@@ -4,6 +4,7 @@ import '../widgets/bottom_navigation.dart';
 import 'chat/chat_service.dart';
 import 'chat/chat_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -92,7 +93,7 @@ class HomeContent extends StatelessWidget {
                       Expanded(
                         child: _buildQuickAccessCard(
                           context: context,
-                          icon: Icons.menu_book,
+                          icon: FontAwesomeIcons.book,
                           title: 'Kitap Okuma',
                           subtitle: 'Kitap okuma arkadaşı bul',
                           onTap: () => _navigateToChat(context, 'Kitap Okuma'),
@@ -102,7 +103,7 @@ class HomeContent extends StatelessWidget {
                       Expanded(
                         child: _buildQuickAccessCard(
                           context: context,
-                          icon: Icons.school,
+                          icon: FontAwesomeIcons.school,
                           title: 'Ders Çalışma',
                           subtitle: 'Ders çalışma arkadaşı bul',
                           onTap: () => _navigateToChat(context, 'Ders Çalışma'),
@@ -118,7 +119,7 @@ class HomeContent extends StatelessWidget {
                       Expanded(
                         child: _buildQuickAccessCard(
                           context: context,
-                          icon: Icons.movie,
+                          icon: FontAwesomeIcons.film,
                           title: 'Sinema',
                           subtitle: 'Film izleme arkadaşı bul',
                           onTap: () => _navigateToChat(context, 'Sinema'),
@@ -128,7 +129,7 @@ class HomeContent extends StatelessWidget {
                       Expanded(
                         child: _buildQuickAccessCard(
                           context: context,
-                          icon: Icons.local_cafe,
+                          icon: FontAwesomeIcons.mugSaucer,
                           title: 'Kahve',
                           subtitle: 'Kahve içme arkadaşı bul',
                           onTap: () => _navigateToChat(context, 'Kahve'),
@@ -144,7 +145,7 @@ class HomeContent extends StatelessWidget {
                       Expanded(
                         child: _buildQuickAccessCard(
                           context: context,
-                          icon: Icons.restaurant,
+                          icon: FontAwesomeIcons.utensils,
                           title: 'Yemek',
                           subtitle: 'Yemek yeme arkadaşı bul',
                           onTap: () => _navigateToChat(context, 'Yemek'),
@@ -154,7 +155,7 @@ class HomeContent extends StatelessWidget {
                       Expanded(
                         child: _buildQuickAccessCard(
                           context: context,
-                          icon: Icons.fitness_center,
+                          icon: FontAwesomeIcons.dumbbell,
                           title: 'Spor',
                           subtitle: 'Spor yapma arkadaşı bul',
                           onTap: () => _navigateToChat(context, 'Spor'),
@@ -171,7 +172,7 @@ class HomeContent extends StatelessWidget {
                         child: _buildQuickAccessCard(
                           
                           context: context,
-                          icon: Icons.sports_esports,
+                          icon: FontAwesomeIcons.gamepad,
                           title: 'Oyun',
                           subtitle: 'Oyun oynama arkadaşı bul',
                           onTap: () => _navigateToChat(context, 'Oyun'),
@@ -181,7 +182,7 @@ class HomeContent extends StatelessWidget {
                       Expanded(
                         child: _buildQuickAccessCard(
                           context: context,
-                          icon: Icons.directions_walk,
+                          icon: FontAwesomeIcons.personWalking,
                           title: 'Yürüyüş',
                           subtitle: 'Yürüyüş arkadaşı bul',
                           onTap: () => _navigateToChat(context, 'Yürüyüş'),
@@ -221,7 +222,7 @@ class HomeContent extends StatelessWidget {
                       children: [
                         _buildActivityItem(
                           context: context,
-                          icon: Icons.login,
+                          icon: FontAwesomeIcons.user,
                           title: 'Giriş yapıldı',
                           subtitle: 'Hesabınıza başarıyla giriş yaptınız',
                           time: 'Az önce',
@@ -229,7 +230,7 @@ class HomeContent extends StatelessWidget {
                         const SizedBox(height: 15),
                         _buildActivityItem(
                           context: context,
-                          icon: Icons.person_add,
+                          icon: FontAwesomeIcons.userPlus,
                           title: 'Hesap oluşturuldu',
                           subtitle: 'UniHub hesabınız oluşturuldu',
                           time: 'Bugün',

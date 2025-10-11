@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'account_info.dart';
 import 'change_password.dart';
 import 'disable_account.dart';
@@ -53,7 +54,7 @@ class _AccountMenuPageState extends State<AccountMenuPage> {
                 context,
                 'Hesap Bilgileri',
                 'Kişisel bilgilerinizi düzenleyin',
-                Icons.person_outline,
+                FontAwesomeIcons.user,
                 () {
                   Navigator.push(
                     context,
@@ -67,7 +68,7 @@ class _AccountMenuPageState extends State<AccountMenuPage> {
                 context,
                 'Şifreni Değiştir',
                 'Hesap şifrenizi güncelleyin',
-                Icons.lock_outline,
+                FontAwesomeIcons.lock,
                 () {
                   Navigator.push(
                     context,
@@ -81,7 +82,7 @@ class _AccountMenuPageState extends State<AccountMenuPage> {
                 context,
                 'Hesabını Devre Dışı Bırak',
                 'Hesabınızı geçici olarak devre dışı bırakın',
-                Icons.block_outlined,
+                FontAwesomeIcons.ban,
                 () {
                   Navigator.push(
                     context,
@@ -110,7 +111,7 @@ class _AccountMenuPageState extends State<AccountMenuPage> {
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.logout, size: 20),
+                      FaIcon(FontAwesomeIcons.rightFromBracket, size: 18),
                       SizedBox(width: 10),
                       Text(
                         'Çıkış Yap',
@@ -178,10 +179,12 @@ class _AccountMenuPageState extends State<AccountMenuPage> {
                     : const Color(0xFF2563EB).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: isDestructive ? Colors.red : const Color(0xFF2563EB),
-                size: 24,
+              child: Center(
+                child: FaIcon(
+                  icon,
+                  color: isDestructive ? Colors.red : const Color(0xFF2563EB),
+                  size: 22,
+                ),
               ),
             ),
             const SizedBox(width: 15),
@@ -216,9 +219,9 @@ class _AccountMenuPageState extends State<AccountMenuPage> {
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
+            FaIcon(
+              FontAwesomeIcons.chevronRight,
+              size: 14,
               color: isDestructive ? Colors.red[300] : Colors.grey[400],
             ),
           ],

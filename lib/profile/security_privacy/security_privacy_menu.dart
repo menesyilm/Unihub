@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'blocked_users.dart';
-import 'privacy_settings.dart';
+import 'privacy_settings.dart'; 
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SecurityPrivacyMenuPage extends StatelessWidget {
   const SecurityPrivacyMenuPage({super.key});
@@ -25,7 +26,7 @@ class SecurityPrivacyMenuPage extends StatelessWidget {
               context,
               'Engellenen Kullanıcılar',
               'Engellediğiniz kullanıcıları görüntüleyin ve yönetin',
-              Icons.block_outlined,
+              FontAwesomeIcons.ban,
               () {
                 Navigator.push(
                   context,
@@ -39,7 +40,7 @@ class SecurityPrivacyMenuPage extends StatelessWidget {
               context,
               'Gizlilik Ayarları',
               'Görünürlük, mesaj ve profil gizliliği ayarları',
-              Icons.privacy_tip_outlined,
+              FontAwesomeIcons.userSecret,  
               () {
                 Navigator.push(
                   context,
@@ -93,7 +94,7 @@ class SecurityPrivacyMenuPage extends StatelessWidget {
                 color: const Color(0xFF2563EB).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
+              child: FaIcon(
                 icon,
                 color: const Color(0xFF2563EB),
                 size: 24,
@@ -123,8 +124,8 @@ class SecurityPrivacyMenuPage extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
+            FaIcon(
+              FontAwesomeIcons.chevronRight,
               size: 16,
               color: isDark ? Colors.grey[600] : Colors.grey[400],
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'settings/settings.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ProfilePage extends StatefulWidget {
   final String userId;
@@ -15,34 +16,37 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStateMixin {
   Map<String, dynamic>? userData;
   bool isLoading = true;
   List<String> profileImages = [];
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     _loadUserData();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
   Future<void> _loadUserData() async {
-    try {
+      try {
       debugPrint('ProfileInformation: Loading user data for userId: ${widget.userId}');
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
           .doc(widget.userId)
-          .get();
+            .get();
 
-      if (mounted) {
+        if (mounted) {
         final data = doc.data();
         
         // Load profile images
@@ -55,18 +59,18 @@ class _ProfilePageState extends State<ProfilePage> {
         
         debugPrint('ProfileInformation: Loaded ${profileImages.length} profile images');
         
-        setState(() {
+          setState(() {
           userData = data;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
+            isLoading = false;
+          });
+        }
+      } catch (e) {
       debugPrint('ProfileInformation: Error loading user data: $e');
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+        }
     }
   }
 
@@ -109,7 +113,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       );
     }
-
+    
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
@@ -120,50 +124,50 @@ class _ProfilePageState extends State<ProfilePage> {
               Stack(
                 children: [
                   // Cover Image
-                  Container(
-                    width: double.infinity,
+              Container(
+                width: double.infinity,
                     height: 200,
                     decoration: userData!['coverImageUrl'] != null
-                        ? BoxDecoration(
-                            image: DecorationImage(
-                              image: NetworkImage(userData!['coverImageUrl']),
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                            ),
-                          ),
-                    child: Stack(
-                      children: [
-                        // Background pattern
-                        Positioned(
-                          top: -40,
-                          right: -40,
-                          child: Container(
-                            width: 160,
-                            height: 160,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.08),
-                            ),
-                          ),
+                    ? BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage(userData!['coverImageUrl']),
+                          fit: BoxFit.cover,
                         ),
-                        Positioned(
-                          bottom: -20,
-                          left: -20,
-                          child: Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.08),
-                            ),
-                          ),
+                      )
+                    : const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                         ),
+                      ),
+                child: Stack(
+                  children: [
+                    // Background pattern
+                    Positioned(
+                      top: -40,
+                      right: -40,
+                      child: Container(
+                        width: 160,
+                        height: 160,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: -20,
+                      left: -20,
+                      child: Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                    ),
                       ],
                     ),
                   ),
@@ -182,21 +186,21 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: Container(
                           width: 100,
                           height: 100,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                            border: Border.all(
-                              color: Colors.white,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                  border: Border.all(
+                                    color: Colors.white,
                               width: 4,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
                           child: Stack(
                             children: [
                               ClipOval(
@@ -205,17 +209,17 @@ class _ProfilePageState extends State<ProfilePage> {
                                         profileImages[0],
                                         width: 100,
                                         height: 100,
-                                        fit: BoxFit.cover,
+                                          fit: BoxFit.cover,
                                         errorBuilder: (context, error, stackTrace) {
-                                          return const Icon(
-                                            Icons.person,
+                                          return const FaIcon(
+                                            FontAwesomeIcons.user,
                                             size: 50,
-                                            color: Color(0xFF2563EB),
-                                          );
-                                        },
+                                                  color: Color(0xFF2563EB),
+                                                );
+                                              },
                                       )
-                                    : const Icon(
-                                        Icons.person,
+                                    : const FaIcon(
+                                        FontAwesomeIcons.user,
                                         size: 50,
                                         color: Color(0xFF2563EB),
                                       ),
@@ -227,30 +231,30 @@ class _ProfilePageState extends State<ProfilePage> {
                                   right: 0,
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
+                                            decoration: BoxDecoration(
                                       color: const Color(0xFF2563EB),
                                       borderRadius: BorderRadius.circular(10),
                                       border: Border.all(color: Colors.white, width: 2),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(Icons.photo_library, size: 10, color: Colors.white),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                        const FaIcon(FontAwesomeIcons.images, size: 10, color: Colors.white),
                                         const SizedBox(width: 2),
                                         Text(
                                           '${profileImages.length}',
                                           style: const TextStyle(
-                                            fontSize: 10,
-                                            color: Colors.white,
+                                                    fontSize: 10,
+                                                    color: Colors.white,
                                             fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                ),
-                            ],
-                          ),
                         ),
                       ),
                     ),
@@ -266,8 +270,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back,
+                          icon: const FaIcon(
+                            FontAwesomeIcons.arrowLeft,
                             color: Colors.white,
                           ),
                           onPressed: () => Navigator.pop(context),
@@ -285,9 +289,10 @@ class _ProfilePageState extends State<ProfilePage> {
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
-                          icon: const Icon(
-                            Icons.menu,
+                          icon: const FaIcon(
+                            FontAwesomeIcons.bars,
                             color: Colors.white,
+                            size: 20,
                           ),
                           onPressed: () {
                             Navigator.push(
@@ -311,9 +316,9 @@ class _ProfilePageState extends State<ProfilePage> {
                             );
                           },
                         ),
-                      ),
-                    ),
-                ],
+                                            ),
+                                          ),
+                                        ],
               ),
 
               const SizedBox(height: 60),
@@ -321,7 +326,128 @@ class _ProfilePageState extends State<ProfilePage> {
               // User Information Card
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: theme.cardColor,
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                    // Name and verification badge
+                            Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                          '${userData!['firstName'] ?? ''} ${userData!['lastName'] ?? ''}'
+                              .trim(),
+                                  style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                                    color: theme.textTheme.bodyLarge?.color,
+                                  ),
+                                ),
+                        
+                              ],
+                            ),
+                            const SizedBox(height: 15),
+                    
+                    // Email
+                    if (userData!['email'] != null)
+                      _buildInfoRow(
+                        FontAwesomeIcons.envelope,
+                        userData!['email'],
+                        isDark,
+                      ),
+                    // Birth Date, Age and Zodiac
+                    if (userData!['birthDate'] != null)
+                      _buildInfoRow(
+                        FontAwesomeIcons.cakeCandles,
+                        _getBirthDateInfo(),
+                        isDark,
+                      ),
+                    // University
+                    if (userData!['university'] != null)
+                      _buildInfoRow(
+                        FontAwesomeIcons.graduationCap,
+                        userData!['university'],
+                        isDark,
+                      ),
+                    // Department and Class
+                    if (userData!['department'] != null || userData!['class'] != null)
+                      _buildInfoRow(
+                        FontAwesomeIcons.book,
+                                              '${userData!['department'] ?? ''} ${userData!['class'] != null ? '- ${userData!['class']}' : ''}'
+                                                  .trim(),
+                        isDark,
+                      ),
+                    // Bio
+                    if (userData!['bio'] != null &&
+                        userData!['bio'].toString().isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Divider(color: theme.dividerColor),
+                      const SizedBox(height: 10),
+                                  Text(
+                        userData!['bio'],
+                                    style: TextStyle(
+                                      fontSize: 14,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Divider(color: theme.dividerColor),
+                      const SizedBox(height: 10),
+                      if (_isEmailVerified(userData!['email'])) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                              color: Colors.green,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                          children: [
+                                FaIcon(
+                                  FontAwesomeIcons.circleCheck,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Doğrulanmış',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                                      ),
+                                    ],
+                        ],
+                    
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Tabs Section
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
                 decoration: BoxDecoration(
                   color: theme.cardColor,
                   borderRadius: BorderRadius.circular(15),
@@ -335,331 +461,61 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 child: Column(
                   children: [
-                    // Name and verification badge
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '${userData!['firstName'] ?? ''} ${userData!['lastName'] ?? ''}'
-                              .trim(),
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: theme.textTheme.bodyLarge?.color,
+                    // TabBar
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+                            width: 1,
                           ),
                         ),
-                        
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-                    
-                    // Email
-                    if (userData!['email'] != null)
-                      _buildInfoRow(
-                        Icons.email_outlined,
-                        userData!['email'],
-                        isDark,
                       ),
-                    // Birth Date, Age and Zodiac
-                    if (userData!['birthDate'] != null)
-                      _buildInfoRow(
-                        Icons.cake_outlined,
-                        _getBirthDateInfo(),
-                        isDark,
-                      ),
-                    // University
-                    if (userData!['university'] != null)
-                      _buildInfoRow(
-                        Icons.school_outlined,
-                        userData!['university'],
-                        isDark,
-                      ),
-                    // Department and Class
-                    if (userData!['department'] != null || userData!['class'] != null)
-                      _buildInfoRow(
-                        Icons.book_outlined,
-                        '${userData!['department'] ?? ''} ${userData!['class'] != null ? '- ${userData!['class']}' : ''}'
-                            .trim(),
-                        isDark,
-                      ),
-                    // Bio
-                    if (userData!['bio'] != null &&
-                        userData!['bio'].toString().isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      Divider(color: theme.dividerColor),
-                      const SizedBox(height: 10),
-                      Text(
-                        userData!['bio'],
-                        style: TextStyle(
+                      child: TabBar(
+                        controller: _tabController,
+                        labelColor: const Color(0xFF2563EB),
+                        unselectedLabelColor: isDark ? Colors.grey[500] : Colors.grey[600],
+                        indicatorColor: const Color(0xFF2563EB),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        labelStyle: const TextStyle(
                           fontSize: 14,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.w600,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 10),
-                      Divider(color: theme.dividerColor),
-                      const SizedBox(height: 10),
-                      if (_isEmailVerified(userData!['email'])) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.verified,
-                                  size: 14,
-                                  color: Colors.white,
-                                ),
-                                Text(
-                                  'Doğrulanmış',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
+                        unselectedLabelStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        tabs: const [
+                          Tab(
+                            icon: FaIcon(FontAwesomeIcons.shareNodes, size: 18),
                           ),
-                        ],
-                    ],
-                    
-                  ],
-                ),
-              ),
-
-
-              // Statistics Section
-              Container(
-                margin: const EdgeInsets.all(20),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: theme.cardColor,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black
-                          .withValues(alpha: isDark ? 0.3 : 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.analytics_outlined,
-                          color: Color(0xFF2563EB),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'İstatistikler',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: theme.textTheme.bodyLarge?.color,
+                          Tab(
+                            icon: FaIcon(FontAwesomeIcons.chartLine, size: 18),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatCard(
-                            'Katıldığı Oda',
-                            _getJoinedRoomsCount(),
-                            Icons.meeting_room_outlined,
-                            isDark,
-                          ),
-                        ),
-                        const SizedBox(width: 15),
-                        Expanded(
-                          child: _buildStatCard(
-                            'Aktif Zaman',
-                            _getActiveHours(),
-                            Icons.access_time_outlined,
-                            isDark,
-                          ),
-                        ),
-                      ],
+                          Tab(
+                            icon: FaIcon(FontAwesomeIcons.tag, size: 18),
                     ),
                   ],
                 ),
               ),
-
-              // Interest Tags Section
-              if (userData!['interestTags'] != null &&
-                  userData!['interestTags'].isNotEmpty)
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: theme.cardColor,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black
-                            .withValues(alpha: isDark ? 0.3 : 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    // TabBarView
+                    SizedBox(
+                      height: 300,
+                      child: TabBarView(
+                        controller: _tabController,
                     children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.tag_outlined,
-                            color: Color(0xFF2563EB),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'İlgi Alanları',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: theme.textTheme.bodyLarge?.color,
-                            ),
-                          ),
+                          // Social Media Tab
+                          _buildSocialMediaTab(isDark),
+                          // Statistics Tab
+                          _buildStatisticsTab(isDark),
+                          // Interest Tags Tab
+                          _buildInterestTagsTab(isDark),
                         ],
-                      ),
-                      const SizedBox(height: 15),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: (userData!['interestTags'] as List)
-                            .map(
-                              (tag) => Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF2563EB),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Text(
-                                  '#$tag',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            )
-                            .toList(),
+                        ),
                       ),
                     ],
-                  ),
                 ),
-
-              const SizedBox(height: 15),
-
-              // Social Connections Section
-              if (userData!['socialConnections'] != null &&
-                  _hasSocialConnections())
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: theme.cardColor,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black
-                            .withValues(alpha: isDark ? 0.3 : 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.share_outlined,
-                            color: Color(0xFF2563EB),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Sosyal Bağlantılar',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: theme.textTheme.bodyLarge?.color,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 15),
-                      // Instagram
-                      if (userData!['socialConnections']['instagram'] != null &&
-                          userData!['socialConnections']['instagram']
-                              .toString()
-                              .isNotEmpty)
-                        _buildSocialConnectionRow(
-                          'Instagram',
-                          Icons.camera_alt_outlined,
-                          userData!['socialConnections']['instagram'],
-                          isDark,
-                        ),
-                      // Telegram
-                      if (userData!['socialConnections']['telegram'] != null &&
-                          userData!['socialConnections']['telegram']
-                              .toString()
-                              .isNotEmpty)
-                        _buildSocialConnectionRow(
-                          'Telegram',
-                          Icons.telegram,
-                          userData!['socialConnections']['telegram'],
-                          isDark,
-                        ),
-                      // Twitter
-                      if (userData!['socialConnections']['twitter'] != null &&
-                          userData!['socialConnections']['twitter']
-                              .toString()
-                              .isNotEmpty)
-                        _buildSocialConnectionRow(
-                          'Twitter',
-                          Icons.alternate_email,
-                          userData!['socialConnections']['twitter'],
-                          isDark,
-                        ),
-                      // LinkedIn
-                      if (userData!['socialConnections']['linkedin'] != null &&
-                          userData!['socialConnections']['linkedin']
-                              .toString()
-                              .isNotEmpty)
-                        _buildSocialConnectionRow(
-                          'LinkedIn',
-                          Icons.work_outline,
-                          userData!['socialConnections']['linkedin'],
-                          isDark,
-                        ),
-                    ],
-                  ),
-                ),
+              ),
 
               const SizedBox(height: 30),
             ],
@@ -669,11 +525,240 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  bool _hasSocialConnections() {
-    if (userData!['socialConnections'] == null) return false;
-    final connections = userData!['socialConnections'] as Map;
-    return connections.values
+  bool _hasSocialMedias() {
+    if (userData!['socialMedias'] == null) return false;
+    final socialMedias = userData!['socialMedias'] as Map;
+    return socialMedias.values
         .any((value) => value != null && value.toString().isNotEmpty);
+  }
+
+  Widget _buildSocialMediaTab(bool isDark) {
+    final firstName = userData!['firstName'] ?? 'Kullanıcı';
+    
+    if (!_hasSocialMedias()) {
+      return Center(
+          child: Padding(
+          padding: const EdgeInsets.all(40),
+                  child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+              FaIcon(
+                FontAwesomeIcons.shareNodes,
+                size: 48,
+                color: isDark ? Colors.grey[600] : Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+                      Text(
+                '$firstName herhangi bir sosyal medya hesabı eklemedi.',
+                textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14, 
+                  color: isDark ? Colors.grey[500] : Colors.grey[600],
+                        ),
+                      ),
+              ],
+            ),
+          ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: GridView.count(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 2.2,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: _buildSocialMediaGridItems(isDark),
+      ),
+    );
+  }
+
+  Widget _buildStatisticsTab(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+            children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Katıldığı Oda',
+                  _getJoinedRoomsCount(),
+                  FontAwesomeIcons.doorOpen,
+                  isDark,
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: _buildStatCard(
+                  'Aktif Zaman',
+                  _getActiveHours(),
+                  FontAwesomeIcons.clock,
+                  isDark,
+                ),
+              ),
+            ],
+              ),
+            ],
+          ),
+    );
+  }
+
+  Widget _buildInterestTagsTab(bool isDark) {
+    final firstName = userData!['firstName'] ?? 'Kullanıcı';
+    
+    if (userData!['interestTags'] == null || 
+        (userData!['interestTags'] as List).isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+              FaIcon(
+                FontAwesomeIcons.tag,
+                size: 48,
+                color: isDark ? Colors.grey[600] : Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+                  Text(
+                '$firstName herhangi bir ilgi alanı eklemedi.',
+                textAlign: TextAlign.center,
+                    style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.grey[500] : Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: GridView.count(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 3.5,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: (userData!['interestTags'] as List)
+            .map(
+              (tag) => Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2563EB),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    '#$tag',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  List<Widget> _buildSocialMediaGridItems(bool isDark) {
+    final socialMedias = userData!['socialMedias'] as Map;
+    final platforms = {
+      'instagram': {
+        'icon': FontAwesomeIcons.instagram,
+        'color': const Color(0xFFE4405F),
+        'name': 'Instagram',
+      },
+      'facebook': {
+        'icon': FontAwesomeIcons.facebook,
+        'color': const Color(0xFF1877F2),
+        'name': 'Facebook',
+      },
+      'twitter': {
+        'icon': FontAwesomeIcons.x,
+        'color': const Color(0xFF1DA1F2),
+        'name': 'Twitter',
+      },
+      'telegram': {
+        'icon': FontAwesomeIcons.telegram,
+        'color': const Color(0xFF0088CC),
+        'name': 'Telegram',
+      },
+      'linkedin': {
+        'icon': FontAwesomeIcons.linkedin,
+        'color': const Color(0xFF0A66C2),
+        'name': 'LinkedIn',
+      },
+    };
+
+    List<Widget> items = [];
+
+    platforms.forEach((key, value) {
+      if (socialMedias[key] != null && socialMedias[key].toString().isNotEmpty) {
+        items.add(
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+            decoration: BoxDecoration(
+              color: (value['color'] as Color).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: (value['color'] as Color).withValues(alpha: 0.3),
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                FaIcon(
+                  value['icon'] as IconData,
+                  color: value['color'] as Color,
+                  size: 22,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  socialMedias[key],
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : const Color(0xFF2D3748),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    });
+
+    return items;
   }
 
   String _getJoinedRoomsCount() {
@@ -773,21 +858,21 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildInfoRow(IconData icon, String text, bool isDark) {
-    return Padding(
+        return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Icon(
+          child: Row(
+            children: [
+          FaIcon(
             icon,
-            size: 18,
+            size: 16,
             color: const Color(0xFF2563EB),
           ),
           const SizedBox(width: 10),
-          Expanded(
+                Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 14,
+                        style: TextStyle(
+                          fontSize: 14, 
                 color: isDark ? Colors.grey[300] : Colors.grey[700],
               ),
             ),
@@ -799,82 +884,41 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildStatCard(
       String title, String value, IconData icon, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2563EB).withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF2563EB).withValues(alpha: 0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: const Color(0xFF2563EB), size: 24),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2563EB),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark ? Colors.grey[400] : Colors.grey[600],
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSocialConnectionRow(
-      String platform, IconData icon, String username, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2563EB).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: const Color(0xFF2563EB), size: 20),
-          ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  platform,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : const Color(0xFF2D3748),
-                  ),
+        return Container(
+          padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+            color: const Color(0xFF2563EB).withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+              width: 1,
                 ),
-                Text(
-                  username,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  ),
+              ),
+                child: Column(
+                  children: [
+              Center(
+                child: FaIcon(icon, color: const Color(0xFF2563EB), size: 22),
+              ),
+              const SizedBox(height: 8),
+                    Text(
+                value,
+                style: const TextStyle(
+                        fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2563EB),
+                      ),
+                    ),
+              const SizedBox(height: 4),
+                    Text(
+                title,
+                      style: TextStyle(
+                  fontSize: 12, 
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -884,7 +928,7 @@ class _ProfilePageState extends State<ProfilePage> {
         builder: (context) => Scaffold(
           backgroundColor: Colors.black,
           body: Stack(
-            children: [
+          children: [
               PageView.builder(
                 controller: _pageController,
                 itemCount: profileImages.length,
@@ -903,8 +947,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
                           return const Center(
-                            child: Icon(
-                              Icons.error_outline,
+                            child: FaIcon(
+                              FontAwesomeIcons.circleExclamation,
                               color: Colors.white,
                               size: 64,
                             ),
@@ -919,12 +963,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                       loadingProgress.expectedTotalBytes!
                                   : null,
                               color: Colors.white,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  );
+          ),
+        );
+      },
+        ),
+      ),
+    );
                 },
               ),
               // Close button
@@ -933,12 +977,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   top: 16,
                   left: 16,
                   child: Container(
-                    decoration: BoxDecoration(
+                decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.5),
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
+                      icon: const FaIcon(FontAwesomeIcons.xmark, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
@@ -950,7 +994,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   bottom: 32,
                   left: 0,
                   right: 0,
-                  child: Row(
+          child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       profileImages.length,
@@ -958,7 +1002,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         width: _currentPage == index ? 24 : 8,
                         height: 8,
-                        decoration: BoxDecoration(
+                decoration: BoxDecoration(
                           color: _currentPage == index
                               ? Colors.white
                               : Colors.white.withValues(alpha: 0.5),
@@ -966,11 +1010,11 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     ),
-                  ),
                 ),
+              ),
             ],
-          ),
-        ),
+                ),
+              ),
       ),
     );
   }

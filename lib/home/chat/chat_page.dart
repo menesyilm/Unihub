@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat_service.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ChatPage extends StatefulWidget {
   final String roomId;
@@ -98,7 +99,7 @@ class _ChatPageState extends State<ChatPage> {
                       backgroundColor: const Color(0xFF2563EB),
                       foregroundColor: Colors.white,
                     ),
-                    child: const Icon(Icons.send),
+                    child: const Icon(FontAwesomeIcons.paperPlane),
                   ),
                 ],
               ),

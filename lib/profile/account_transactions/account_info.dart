@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:io';
 
 class AccountInfoPage extends StatefulWidget {
@@ -327,7 +328,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
+                    icon: const FaIcon(FontAwesomeIcons.xmark),
                   ),
                 ],
               ),
@@ -358,10 +359,10 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                         ? Colors.grey[600] 
                         : const Color(0xFF9CA3AF),
                   ),
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: const FaIcon(FontAwesomeIcons.magnifyingGlass, size: 18),
                   suffixIcon: _hasUniSearchText
                       ? IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
                           onPressed: () {
                             _searchController.clear();
                             setState(() {
@@ -402,8 +403,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.search_off,
+                              FaIcon(
+                                FontAwesomeIcons.magnifyingGlass,
                                 size: 64,
                                 color: theme.brightness == Brightness.dark 
                                     ? Colors.grey[600]
@@ -437,8 +438,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                             ),
                           ),
                           trailing: isSelected
-                              ? const Icon(
-                                  Icons.check,
+                              ? const                                   FaIcon(
+                                  FontAwesomeIcons.check,
                                   color: Color(0xFF2563EB),
                                 )
                               : null,
@@ -505,7 +506,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
+                    icon: const FaIcon(FontAwesomeIcons.xmark),
                   ),
                 ],
               ),
@@ -536,10 +537,10 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                         ? Colors.grey[600] 
                         : const Color(0xFF9CA3AF),
                   ),
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: const FaIcon(FontAwesomeIcons.magnifyingGlass, size: 18),
                   suffixIcon: _hasDeptSearchText
                       ? IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
                           onPressed: () {
                             _searchController.clear();
                             setState(() {
@@ -580,8 +581,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.search_off,
+                              FaIcon(
+                                FontAwesomeIcons.magnifyingGlass,
                                 size: 64,
                                 color: theme.brightness == Brightness.dark 
                                     ? Colors.grey[600]
@@ -615,8 +616,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                             ),
                           ),
                           trailing: isSelected
-                              ? const Icon(
-                                  Icons.check,
+                              ? const                                   FaIcon(
+                                  FontAwesomeIcons.check,
                                   color: Color(0xFF2563EB),
                                 )
                               : null,
@@ -683,7 +684,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
+                    icon: const FaIcon(FontAwesomeIcons.xmark),
                   ),
                 ],
               ),
@@ -714,10 +715,10 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                         ? Colors.grey[600] 
                         : const Color(0xFF9CA3AF),
                   ),
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: const FaIcon(FontAwesomeIcons.magnifyingGlass, size: 18),
                   suffixIcon: _hasClassSearchText
                       ? IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
                           onPressed: () {
                             _searchController.clear();
                             setState(() {
@@ -758,8 +759,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.search_off,
+                              FaIcon(
+                                FontAwesomeIcons.magnifyingGlass,
                                 size: 64,
                                 color: theme.brightness == Brightness.dark 
                                     ? Colors.grey[600]
@@ -793,8 +794,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                             ),
                           ),
                           trailing: isSelected
-                              ? const Icon(
-                                  Icons.check,
+                              ? const                                   FaIcon(
+                                  FontAwesomeIcons.check,
                                   color: Color(0xFF2563EB),
                                 )
                               : null,
@@ -898,8 +899,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.add_photo_alternate_outlined,
+          FaIcon(
+            FontAwesomeIcons.image,
             size: 32,
             color: isDark ? Colors.grey[600] : Colors.grey[400],
           ),
@@ -1191,8 +1192,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                                   Container(
                                                     color: const Color(0xFF2563EB),
                                                     child: const Center(
-                                                      child: Icon(
-                                                        Icons.image_outlined,
+                                                      child: FaIcon(
+                                                        FontAwesomeIcons.image,
                                                         size: 50,
                                                         color: Colors.white,
                                                       ),
@@ -1213,8 +1214,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                                 borderRadius: BorderRadius.circular(15),
                                               ),
                                               child: const Center(
-                                                child: Icon(
-                                                  Icons.image_outlined,
+                                                child: FaIcon(
+                                                  FontAwesomeIcons.image,
                                                   size: 50,
                                                   color: Colors.white,
                                                 ),
@@ -1233,16 +1234,16 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                       color: Colors.black.withValues(alpha: 0.5),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: const Icon(
-                                      Icons.add_photo_alternate,
+                                    child: const FaIcon(
+                                      FontAwesomeIcons.camera,
                                       color: Colors.white,
-                                      size: 20,
+                                      size: 18,
                                     ),
                                   ),
                                 ),
                             ],
                           ),
-                          const SizedBox(height: 60),
+                          const SizedBox(height: 20),
                           // Image action buttons
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 0),
@@ -1255,7 +1256,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                     Expanded(
                                       child: OutlinedButton.icon(
                                         onPressed: _pickCoverImage,
-                                        icon: const Icon(Icons.photo_camera, size: 18),
+                                        icon: const FaIcon(FontAwesomeIcons.camera, size: 16),
                                         label: const Text('Kapak Değiştir'),
                                         style: OutlinedButton.styleFrom(
                                          backgroundColor: const Color(0xFF2563EB),
@@ -1282,7 +1283,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                                   .update({'coverImageUrl': null});
                                             }
                                           },
-                                          icon: const Icon(Icons.delete_outline, size: 18),
+                                          icon: const FaIcon(FontAwesomeIcons.trash, size: 16),
                                           label: const Text('Kapak Kaldır'),
                                           style: OutlinedButton.styleFrom(
                                             foregroundColor: Colors.red,
@@ -1311,7 +1312,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                     children: [
                                       Row(
                                         children: [
-                                          const Icon(Icons.photo_library_outlined, color: Color(0xFF2563EB), size: 20),
+                                          const FaIcon(FontAwesomeIcons.images, color: Color(0xFF2563EB), size: 18),
                                           const SizedBox(width: 8),
                                           Text(
                                             'Profil Fotoğrafları',
@@ -1357,14 +1358,14 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                       ),
                     ),
                     
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 20),
                     
                     // Form fields
                     _buildFormField(
                       controller: _firstNameController,
                       label: 'Ad',
                       hint: 'Adınızı giriniz',
-                      icon: Icons.person_outline,
+                      icon: FontAwesomeIcons.user,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Ad alanı zorunludur';
@@ -1379,7 +1380,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                       controller: _lastNameController,
                       label: 'Soyad',
                       hint: 'Soyadınızı giriniz',
-                      icon: Icons.person_outline,
+                      icon: FontAwesomeIcons.user,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Soyad alanı zorunludur';
@@ -1438,10 +1439,10 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                 color: const Color(0xFF2563EB).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(
-                                Icons.cake_outlined,
+                              child: const FaIcon(
+                                FontAwesomeIcons.cakeCandles,
                                 color: Color(0xFF2563EB),
-                                size: 20,
+                                size: 18,
                               ),
                             ),
                             const SizedBox(width: 15),
@@ -1473,10 +1474,10 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                 ],
                               ),
                             ),
-                            Icon(
-                              Icons.calendar_today_outlined,
+                            FaIcon(
+                              FontAwesomeIcons.calendar,
                               color: const Color(0xFF2563EB),
-                              size: 20,
+                              size: 18,
                             ),
                           ],
                         ),
@@ -1510,12 +1511,12 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.school_outlined,
+                            FaIcon(
+                              FontAwesomeIcons.graduationCap,
                               color: Theme.of(context).brightness == Brightness.dark
                                   ? Colors.grey[600]
                                   : const Color(0xFF9CA3AF),
-                              size: 20,
+                              size: 18,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -1533,12 +1534,12 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                 ),
                               ),
                             ),
-                            Icon(
-                              Icons.keyboard_arrow_down,
+                            FaIcon(
+                              FontAwesomeIcons.chevronDown,
                               color: Theme.of(context).brightness == Brightness.dark
                                   ? Colors.grey[600]
                                   : const Color(0xFF9CA3AF),
-                              size: 20,
+                              size: 18,
                             ),
                           ],
                         ),
@@ -1595,12 +1596,12 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                 ),
                               ),
                             ),
-                            Icon(
-                              Icons.keyboard_arrow_down,
+                            FaIcon(
+                              FontAwesomeIcons.chevronDown,
                               color: Theme.of(context).brightness == Brightness.dark
                                   ? Colors.grey[600]
                                   : const Color(0xFF9CA3AF),
-                              size: 20,
+                              size: 18,
                             ),
                           ],
                         ),
@@ -1657,12 +1658,12 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                 ),
                               ),
                             ),
-                            Icon(
-                              Icons.keyboard_arrow_down,
+                            FaIcon(
+                              FontAwesomeIcons.chevronDown,
                               color: Theme.of(context).brightness == Brightness.dark
                                   ? Colors.grey[600]
                                   : const Color(0xFF9CA3AF),
-                              size: 20,
+                              size: 18,
                             ),
                           ],
                         ),
@@ -1857,12 +1858,12 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                     : const Color(0xFF9CA3AF),
                 fontSize: 16,
               ),
-              prefixIcon: Icon(
+              prefixIcon: FaIcon(
                 icon,
                 color: Theme.of(context).brightness == Brightness.dark
                     ? Colors.grey[600]
                     : const Color(0xFF9CA3AF),
-                size: 20,
+                size: 18,
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -1911,10 +1912,10 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
             const SizedBox(height: 4),
             Row(
               children: [
-                Icon(
-                  Icons.access_time,
+                FaIcon(
+                  FontAwesomeIcons.clock,
                   color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
-                  size: 20,
+                  size: 18,
                 ),
                 const SizedBox(width: 8),
                 Text(
