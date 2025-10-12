@@ -6,6 +6,8 @@ import 'account_transactions/account_menu.dart';
 import 'security_privacy/security_privacy_menu.dart';
 import 'theme/theme_settings.dart';
 import 'social_media/social_media_menu.dart';
+import 'notifications/notification_settings_page.dart';
+import 'help_and_support/help_support_menu.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -126,7 +128,12 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: 'Bildirimler',
                       subtitle: 'Bildirim tercihlerinizi ayarlayın',
                       onTap: () {
-                        _showNotificationSettings();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const NotificationSettingsPage(),
+                          ),
+                        );
                       },
                     ),
                     _buildDivider(),
@@ -149,10 +156,10 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: 'Yardım & Destek',
                       subtitle: 'Sık sorulan sorular ve destek',
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Yardım sayfası yakında eklenecek'),
-                            backgroundColor: Color(0xFF2563EB),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HelpSupportMenuPage(),
                           ),
                         );
                       },
@@ -254,142 +261,6 @@ class _SettingsPageState extends State<SettingsPage> {
         );
       },
     );
-  }
-
-  void _showNotificationSettings() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.6,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Bildirim Ayarları',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF2D3748),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildNotificationToggle(
-                    'Yeni Mesajlar',
-                    'Yeni mesaj bildirimleri al',
-                    FontAwesomeIcons.message,
-                    userData?['notifications']?['messages'] ?? true,
-                    (value) => _updateNotificationSetting('messages', value),
-                  ),
-                  _buildNotificationToggle(
-                    'Oda Davetleri',
-                    'Oda davet bildirimleri al',
-                    FontAwesomeIcons.doorOpen,
-                    userData?['notifications']?['roomInvites'] ?? true,
-                    (value) => _updateNotificationSetting('roomInvites', value),
-                  ),
-                  _buildNotificationToggle(
-                    'Sistem Bildirimleri',
-                    'Sistem güncellemeleri ve duyurular',
-                    FontAwesomeIcons.bell,
-                    userData?['notifications']?['system'] ?? true,
-                    (value) => _updateNotificationSetting('system', value),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationToggle(
-    String title,
-    String subtitle,
-    IconData icon,
-    bool value,
-    Function(bool) onChanged,
-  ) {
-    return Builder(
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2563EB).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: FaIcon(icon, color: const Color(0xFF2563EB), size: 18),
-                ),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : const Color(0xFF2D3748),
-                      ),
-                    ),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 14, 
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Switch(
-                value: value,
-                onChanged: onChanged,
-                activeThumbColor: const Color(0xFF2563EB),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _updateNotificationSetting(String type, bool value) {
-    // Implementation for notification setting update
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('$type bildirim ayarı güncellendi')));
   }
 }
 

@@ -85,8 +85,7 @@ class HomeContent extends StatelessWidget {
                       color: isDark ? Colors.white : const Color(0xFF2D3748),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  
+                  const SizedBox(height: 15),
                   // Quick access cards
                   Row(
                     children: [
@@ -139,7 +138,6 @@ class HomeContent extends StatelessWidget {
                   ),
                   
                   const SizedBox(height: 15),
-                  
                   Row(
                     children: [
                       Expanded(
@@ -163,9 +161,7 @@ class HomeContent extends StatelessWidget {
                       ),
                     ],
                   ),
-                  
                   const SizedBox(height: 15),
-                  
                   Row(
                     children: [
                       Expanded(
@@ -190,54 +186,7 @@ class HomeContent extends StatelessWidget {
                       ),
                     ],
                   ),
-                  
-                  const SizedBox(height: 30),
-                  
-                  // Recent activity
-                  Text(
-                    'Son Aktiviteler',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF2D3748),
-                    ),
-                  ),
                   const SizedBox(height: 15),
-                  
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        _buildActivityItem(
-                          context: context,
-                          icon: FontAwesomeIcons.user,
-                          title: 'Giriş yapıldı',
-                          subtitle: 'Hesabınıza başarıyla giriş yaptınız',
-                          time: 'Az önce',
-                        ),
-                        const SizedBox(height: 15),
-                        _buildActivityItem(
-                          context: context,
-                          icon: FontAwesomeIcons.userPlus,
-                          title: 'Hesap oluşturuldu',
-                          subtitle: 'UniHub hesabınız oluşturuldu',
-                          time: 'Bugün',
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -261,6 +210,7 @@ class HomeContent extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(15),
       child: Container(
+        height: 160, // Sabit yükseklik eklendi
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: theme.cardColor,
@@ -274,6 +224,7 @@ class HomeContent extends StatelessWidget {
           ],
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               width: 50,
@@ -297,6 +248,8 @@ class HomeContent extends StatelessWidget {
                 color: isDark ? Colors.white : const Color(0xFF2D3748),
               ),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
             Text(
@@ -306,69 +259,12 @@ class HomeContent extends StatelessWidget {
                 color: isDark ? Colors.grey[400] : Colors.grey[600],
               ),
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildActivityItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String time,
-    required BuildContext context,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(
-            icon,
-            color: const Color(0xFF2563EB),
-            size: 20,
-          ),
-        ),
-        const SizedBox(width: 15),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : const Color(0xFF2D3748),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ),
-        Text(
-          time,
-          style: TextStyle(
-            fontSize: 12,
-            color: isDark ? Colors.grey[400] : Colors.grey[500],
-          ),
-        ),
-      ],
     );
   }
 }

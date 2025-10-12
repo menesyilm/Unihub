@@ -45,6 +45,11 @@ class _AccountMenuPageState extends State<AccountMenuPage> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Hesabın'),
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        foregroundColor: theme.appBarTheme.foregroundColor,
+        elevation: 0,
+        automaticallyImplyLeading: true,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
