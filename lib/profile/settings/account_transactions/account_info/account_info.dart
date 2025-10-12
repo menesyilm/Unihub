@@ -25,6 +25,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   final TextEditingController _departmentController = TextEditingController();
   final TextEditingController _classController = TextEditingController();
   final TextEditingController _interestTagsController = TextEditingController();
+  final List <String?> _profileImageUrls = [null, null, null, null];
+  final List<File?> _selectedProfileImages = [null, null, null, null];
   final ImagePicker _picker = ImagePicker();
   
   String _selectedUniversity = '';
@@ -33,9 +35,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   List<String> _interestTags = [];
   Map<String, String> _activeHours = {'start': '19:00', 'end': '22:00'};
   DateTime? _birthDate;
-  List <String?> _profileImageUrls = [null, null, null, null];
+  
   String? _coverImageUrl;
-  List<File?> _selectedProfileImages = [null, null, null, null];
   File? _selectedCoverImage;
   bool _isLoading = false;
   bool _isSaving = false;
