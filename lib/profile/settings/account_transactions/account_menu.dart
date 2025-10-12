@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'account_info.dart';
-import 'change_password.dart';
-import 'disable_account.dart';
-import '../../sign_transactions/login_page.dart';
+import 'account_info/account_info.dart';
+import 'change_password/change_password.dart';
+import 'disable_account/disable_account.dart';
+import 'package:unihub/sign_transactions/login_page.dart';
 
 class AccountMenuPage extends StatefulWidget {
   const AccountMenuPage({super.key});
@@ -39,6 +39,7 @@ class _AccountMenuPageState extends State<AccountMenuPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -50,49 +51,70 @@ class _AccountMenuPageState extends State<AccountMenuPage> {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              _buildAccountOption(
-                context,
-                'Hesap Bilgileri',
-                'Kişisel bilgilerinizi düzenleyin',
-                FontAwesomeIcons.user,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AccountInfoPage(),
+              // Account options container
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.cardColor,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
                     ),
-                  );
-                },
-              ),
-              _buildAccountOption(
-                context,
-                'Şifreni Değiştir',
-                'Hesap şifrenizi güncelleyin',
-                FontAwesomeIcons.lock,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ChangePasswordPage(),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    _buildAccountOption(
+                      context,
+                      'Hesap Bilgileri',
+                      'Kişisel bilgilerinizi düzenleyin',
+                      FontAwesomeIcons.user,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AccountInfoPage(),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-              _buildAccountOption(
-                context,
-                'Hesabını Devre Dışı Bırak',
-                'Hesabınızı geçici olarak devre dışı bırakın',
-                FontAwesomeIcons.ban,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const DisableAccountPage(),
+                    _buildDivider(),
+                    _buildAccountOption(
+                      context,
+                      'Şifreni Değiştir',
+                      'Hesap şifrenizi güncelleyin',
+                      FontAwesomeIcons.lock,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ChangePasswordPage(),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-                isDestructive: true,
+                    _buildDivider(),
+                    _buildAccountOption(
+                      context,
+                      'Hesabını Devre Dışı Bırak',
+                      'Hesabınızı geçici olarak devre dışı bırakın',
+                      FontAwesomeIcons.ban,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DisableAccountPage(),
+                          ),
+                        );
+                      },
+                      isDestructive: true,
+                    ),
+                  ],
+                ),
               ),
+              
               const SizedBox(height: 30),
               
               // Logout button
@@ -105,7 +127,7 @@ class _AccountMenuPageState extends State<AccountMenuPage> {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: const Row(
@@ -140,34 +162,14 @@ class _AccountMenuPageState extends State<AccountMenuPage> {
     VoidCallback onTap, {
     bool isDestructive = false,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(15),
-      child: Container(
+      child: Padding(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: isDestructive
-                ? Colors.red.withValues(alpha: 0.2)
-                : (Theme.of(context).brightness == Brightness.dark 
-                    ? const Color(0xFF2D2D2D)
-                    : const Color(0xFFE5E7EB)),
-            width: isDestructive ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(15),
-          color: isDestructive
-              ? Colors.red.withValues(alpha: 0.05)
-              : Theme.of(context).cardColor,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(
-                alpha: Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.05,
-              ),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
         child: Row(
           children: [
             Container(
@@ -199,35 +201,43 @@ class _AccountMenuPageState extends State<AccountMenuPage> {
                       fontWeight: FontWeight.w600,
                       color: isDestructive
                           ? Colors.red[700]
-                          : (Theme.of(context).brightness == Brightness.dark 
-                              ? Colors.white 
-                              : const Color(0xFF2D3748)),
+                          : (isDark ? Colors.white : const Color(0xFF2D3748)),
+                      height: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       color: isDestructive 
                           ? Colors.red[400] 
-                          : (Theme.of(context).brightness == Brightness.dark 
-                              ? Colors.grey[400] 
-                              : Colors.grey[600]),
+                          : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                      height: 1.3,
                     ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(width: 12),
             FaIcon(
               FontAwesomeIcons.chevronRight,
-              size: 14,
-              color: isDestructive ? Colors.red[300] : Colors.grey[400],
+              size: 16,
+              color: isDestructive 
+                  ? Colors.red[300] 
+                  : (isDark ? Colors.grey[600] : Colors.grey[400]),
             ),
           ],
         ),
       ),
     );
   }
-}
 
+  Widget _buildDivider() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      height: 1,
+      color: Theme.of(context).dividerColor,
+    );
+  }
+}

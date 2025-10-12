@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'sign_transactions/start_up_page.dart';
 import 'firebase/firebase_options.dart';
-import 'profile/theme/theme_service.dart';
+import 'profile/settings/theme/theme_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';

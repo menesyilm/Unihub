@@ -5,6 +5,9 @@ import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart';
 import 'dart:io';
 
 class AccountInfoPage extends StatefulWidget {
@@ -30,12 +33,18 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   List<String> _interestTags = [];
   Map<String, String> _activeHours = {'start': '19:00', 'end': '22:00'};
   DateTime? _birthDate;
-  List<String?> _profileImageUrls = [null, null, null, null];
+  List <String?> _profileImageUrls = [null, null, null, null];
   String? _coverImageUrl;
   List<File?> _selectedProfileImages = [null, null, null, null];
   File? _selectedCoverImage;
   bool _isLoading = false;
   bool _isSaving = false;
+  
+  // Location variables
+  LatLng? _selectedLocation;
+  String _selectedAddress = '';
+  bool _locationPermissionGranted = false;
+  GoogleMapController? _mapController;
 
   List<String> _universities = [];
   List<String> _departments = [];
@@ -63,9 +72,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   }
 
   Future<void> _loadUniversities() async {
-    setState(() {
-      _isLoadingUniversities = true;
-    });
+    setState(() => _isLoadingUniversities = true);
 
     try {
       final snapshot = await FirebaseFirestore.instance
@@ -85,9 +92,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
         _isLoadingUniversities = false;
       });
     } catch (e) {
-      setState(() {
-        _isLoadingUniversities = false;
-      });
+      setState(() => _isLoadingUniversities = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -100,9 +105,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   }
   
   Future<void> _loadDepartments() async {
-    setState(() {
-      _isLoadingDepartments = true;
-    });
+    setState(() => _isLoadingDepartments = true);
 
     try {
       final snapshot = await FirebaseFirestore.instance
@@ -114,7 +117,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
           .map((doc) => doc.data()['name'] as String)
           .toList();
 
-          departments.sort((a, b) => a.compareTo(b));
+      departments.sort((a, b) => a.compareTo(b));
 
       setState(() {
         _departments = departments;
@@ -122,9 +125,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
         _isLoadingDepartments = false;
       });
     } catch (e) {
-      setState(() {
-        _isLoadingDepartments = false;
-      });
+      setState(() => _isLoadingDepartments = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -137,9 +138,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   }
   
   Future<void> _loadClasses() async {
-    setState(() {
-      _isLoadingClasses = true;
-    });
+    setState(() => _isLoadingClasses = true);
 
     try {
       final snapshot = await FirebaseFirestore.instance
@@ -159,9 +158,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
         _isLoadingClasses = false;
       });
     } catch (e) {
-      setState(() {
-        _isLoadingClasses = false;
-      });
+      setState(() => _isLoadingClasses = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -174,9 +171,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   }
 
   Future<void> _loadUserData() async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -191,7 +186,6 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
           _firstNameController.text = data['firstName'] ?? '';
           _lastNameController.text = data['lastName'] ?? '';
           
-          // Load birthDate from Firebase
           if (data['birthDate'] != null) {
             try {
               if (data['birthDate'] is Timestamp) {
@@ -213,20 +207,29 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
           _interestTags = List<String>.from(data['interestTags'] ?? []);
           _activeHours = Map<String, String>.from(data['activeHours'] ?? {'start': '19:00', 'end': '22:00'});
           
-          // Load profile images (support old single image and new multiple images)
           if (data['profileImages'] != null && data['profileImages'] is List) {
             final images = List<String>.from(data['profileImages']);
             for (int i = 0; i < images.length && i < 4; i++) {
               _profileImageUrls[i] = images[i];
             }
           } else if (data['profileImageUrl'] != null) {
-            // Backward compatibility: convert old single image to array
             _profileImageUrls[0] = data['profileImageUrl'];
           }
           
           _coverImageUrl = data['coverImageUrl'];
-          
           _interestTagsController.text = _interestTags.join(', ');
+          
+          // Load location data
+          if (data['location'] != null && data['location'] is Map) {
+            final locationData = data['location'] as Map;
+            if (locationData['latitude'] != null && locationData['longitude'] != null) {
+              _selectedLocation = LatLng(
+                locationData['latitude'] as double,
+                locationData['longitude'] as double,
+              );
+              _selectedAddress = locationData['address'] ?? '';
+            }
+          }
         }
       }
     } catch (e) {
@@ -240,9 +243,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -250,14 +251,9 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   void _filterUniversities(String query) {
     setState(() {
       _hasUniSearchText = query.isNotEmpty;
-      if (query.isEmpty) {
-        _filteredUniversities = _universities;
-      } else {
-        _filteredUniversities = _universities
-            .where((university) =>
-                university.toLowerCase().contains(query.toLowerCase()))
-            .toList();
-      }
+      _filteredUniversities = query.isEmpty
+          ? _universities
+          : _universities.where((university) => university.toLowerCase().contains(query.toLowerCase())).toList();
     });
   }
   
@@ -266,9 +262,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
       _hasDeptSearchText = query.isNotEmpty;
       _filteredDepartments = query.isEmpty
           ? _departments
-          : _departments
-              .where((d) => d.toLowerCase().contains(query.toLowerCase()))
-              .toList();
+          : _departments.where((d) => d.toLowerCase().contains(query.toLowerCase())).toList();
     });
   }
   
@@ -276,10 +270,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
     setState(() {
       _hasClassSearchText = query.isNotEmpty;
       _filteredClasses = query.isEmpty
-         ? _classes
-          : _classes
-              .where((c) => c.toLowerCase().contains(query.toLowerCase()))
-              .toList();
+          ? _classes
+          : _classes.where((c) => c.toLowerCase().contains(query.toLowerCase())).toList();
     });
   }
 
@@ -342,22 +334,15 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                 onChanged: (query) {
                   setState(() {
                     _hasUniSearchText = query.isNotEmpty;
-                    if (query.isEmpty) {
-                      _filteredUniversities = _universities;
-                    } else {
-                      _filteredUniversities = _universities
-                          .where((university) =>
-                              university.toLowerCase().contains(query.toLowerCase()))
-                          .toList();
-                    }
+                    _filteredUniversities = query.isEmpty
+                        ? _universities
+                        : _universities.where((university) => university.toLowerCase().contains(query.toLowerCase())).toList();
                   });
                 },
                 decoration: InputDecoration(
                   hintText: 'Üniversite ara...',
                   hintStyle: TextStyle(
-                    color: theme.brightness == Brightness.dark 
-                        ? Colors.grey[600] 
-                        : const Color(0xFF9CA3AF),
+                    color: theme.brightness == Brightness.dark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                   ),
                   prefixIcon: const FaIcon(FontAwesomeIcons.magnifyingGlass, size: 18),
                   suffixIcon: _hasUniSearchText
@@ -375,19 +360,14 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: theme.brightness == Brightness.dark
-                          ? const Color(0xFF2D2D2D)
-                          : Colors.grey[300]!,
+                      color: theme.brightness == Brightness.dark ? const Color(0xFF2D2D2D) : Colors.grey[300]!,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Color(0xFF2563EB)),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
               ),
             ),
@@ -406,18 +386,14 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                               FaIcon(
                                 FontAwesomeIcons.magnifyingGlass,
                                 size: 64,
-                                color: theme.brightness == Brightness.dark 
-                                    ? Colors.grey[600]
-                                    : Colors.grey,
+                                color: theme.brightness == Brightness.dark ? Colors.grey[600] : Colors.grey,
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 'Üniversite bulunamadı',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: theme.brightness == Brightness.dark 
-                                      ? Colors.grey[400]
-                                      : Colors.grey,
+                                  color: theme.brightness == Brightness.dark ? Colors.grey[400] : Colors.grey,
                                 ),
                               ),
                             ],
@@ -429,31 +405,26 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                             final university = _filteredUniversities[index];
                             final isSelected = university == _selectedUniversity;
                         
-                        return ListTile(
-                          title: Text(
-                            university,
-                            style: TextStyle(
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                              color: isSelected ? const Color(0xFF2563EB) : theme.textTheme.bodyLarge?.color,
-                            ),
-                          ),
-                          trailing: isSelected
-                              ? const                                   FaIcon(
-                                  FontAwesomeIcons.check,
-                                  color: Color(0xFF2563EB),
-                                )
-                              : null,
-                          onTap: () {
-                            setState(() {
-                              _selectedUniversity = university;
-                            });
-                            _searchController.clear();
-                            _filterUniversities('');
-                            Navigator.pop(context);
+                            return ListTile(
+                              title: Text(
+                                university,
+                                style: TextStyle(
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                  color: isSelected ? const Color(0xFF2563EB) : theme.textTheme.bodyLarge?.color,
+                                ),
+                              ),
+                              trailing: isSelected
+                                  ? const FaIcon(FontAwesomeIcons.check, color: Color(0xFF2563EB))
+                                  : null,
+                              onTap: () {
+                                setState(() => _selectedUniversity = university);
+                                _searchController.clear();
+                                _filterUniversities('');
+                                Navigator.pop(context);
+                              },
+                            );
                           },
-                        );
-                      },
-                    ),
+                        ),
             ),
           ],
         ),
@@ -520,22 +491,15 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                 onChanged: (query) {
                   setState(() {
                     _hasDeptSearchText = query.isNotEmpty;
-                    if (query.isEmpty) {
-                      _filteredDepartments = _departments;
-                    } else {
-                      _filteredDepartments = _departments
-                          .where((department) =>
-                              department.toLowerCase().contains(query.toLowerCase()))
-                          .toList();
-                    }
+                    _filteredDepartments = query.isEmpty
+                        ? _departments
+                        : _departments.where((department) => department.toLowerCase().contains(query.toLowerCase())).toList();
                   });
                 },
                 decoration: InputDecoration(
                   hintText: 'Bölüm ara...',
                   hintStyle: TextStyle(
-                    color: theme.brightness == Brightness.dark 
-                        ? Colors.grey[600] 
-                        : const Color(0xFF9CA3AF),
+                    color: theme.brightness == Brightness.dark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                   ),
                   prefixIcon: const FaIcon(FontAwesomeIcons.magnifyingGlass, size: 18),
                   suffixIcon: _hasDeptSearchText
@@ -553,19 +517,14 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: theme.brightness == Brightness.dark
-                          ? const Color(0xFF2D2D2D)
-                          : Colors.grey[300]!,
+                      color: theme.brightness == Brightness.dark ? const Color(0xFF2D2D2D) : Colors.grey[300]!,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Color(0xFF2563EB)),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
               ),
             ),
@@ -584,18 +543,14 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                               FaIcon(
                                 FontAwesomeIcons.magnifyingGlass,
                                 size: 64,
-                                color: theme.brightness == Brightness.dark 
-                                    ? Colors.grey[600]
-                                    : Colors.grey,
+                                color: theme.brightness == Brightness.dark ? Colors.grey[600] : Colors.grey,
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 'Bölüm bulunamadı',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: theme.brightness == Brightness.dark 
-                                      ? Colors.grey[400]
-                                      : Colors.grey,
+                                  color: theme.brightness == Brightness.dark ? Colors.grey[400] : Colors.grey,
                                 ),
                               ),
                             ],
@@ -607,31 +562,26 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                             final department = _filteredDepartments[index];
                             final isSelected = department == _selectedDepartment;
                         
-                        return ListTile(
-                          title: Text(
-                            department,
-                            style: TextStyle(
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                              color: isSelected ? const Color(0xFF2563EB) : theme.textTheme.bodyLarge?.color,
-                            ),
-                          ),
-                          trailing: isSelected
-                              ? const                                   FaIcon(
-                                  FontAwesomeIcons.check,
-                                  color: Color(0xFF2563EB),
-                                )
-                              : null,
-                          onTap: () {
-                            setState(() {
-                              _selectedDepartment = department;
-                            });
-                            _searchController.clear();
-                            _filterDepartments('');
-                            Navigator.pop(context);
+                            return ListTile(
+                              title: Text(
+                                department,
+                                style: TextStyle(
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                  color: isSelected ? const Color(0xFF2563EB) : theme.textTheme.bodyLarge?.color,
+                                ),
+                              ),
+                              trailing: isSelected
+                                  ? const FaIcon(FontAwesomeIcons.check, color: Color(0xFF2563EB))
+                                  : null,
+                              onTap: () {
+                                setState(() => _selectedDepartment = department);
+                                _searchController.clear();
+                                _filterDepartments('');
+                                Navigator.pop(context);
+                              },
+                            );
                           },
-                        );
-                      },
-                    ),
+                        ),
             ),
           ],
         ),
@@ -698,22 +648,15 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                 onChanged: (query) {
                   setState(() {
                     _hasClassSearchText = query.isNotEmpty;
-                    if (query.isEmpty) {
-                      _filteredClasses = _classes;
-                    } else {
-                      _filteredClasses = _classes
-                          .where((classes) =>
-                              classes.toLowerCase().contains(query.toLowerCase()))
-                          .toList();
-                    }
+                    _filteredClasses = query.isEmpty
+                        ? _classes
+                        : _classes.where((classes) => classes.toLowerCase().contains(query.toLowerCase())).toList();
                   });
                 },
                 decoration: InputDecoration(
                   hintText: 'Sınıf ara...',
                   hintStyle: TextStyle(
-                    color: theme.brightness == Brightness.dark 
-                        ? Colors.grey[600] 
-                        : const Color(0xFF9CA3AF),
+                    color: theme.brightness == Brightness.dark ? Colors.grey[600] : const Color(0xFF9CA3AF),
                   ),
                   prefixIcon: const FaIcon(FontAwesomeIcons.magnifyingGlass, size: 18),
                   suffixIcon: _hasClassSearchText
@@ -731,19 +674,14 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: theme.brightness == Brightness.dark
-                          ? const Color(0xFF2D2D2D)
-                          : Colors.grey[300]!,
+                      color: theme.brightness == Brightness.dark ? const Color(0xFF2D2D2D) : Colors.grey[300]!,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Color(0xFF2563EB)),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
               ),
             ),
@@ -762,18 +700,14 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                               FaIcon(
                                 FontAwesomeIcons.magnifyingGlass,
                                 size: 64,
-                                color: theme.brightness == Brightness.dark 
-                                    ? Colors.grey[600]
-                                    : Colors.grey,
+                                color: theme.brightness == Brightness.dark ? Colors.grey[600] : Colors.grey,
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 'Sınıf bulunamadı',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: theme.brightness == Brightness.dark 
-                                      ? Colors.grey[400]
-                                      : Colors.grey,
+                                  color: theme.brightness == Brightness.dark ? Colors.grey[400] : Colors.grey,
                                 ),
                               ),
                             ],
@@ -785,33 +719,447 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                             final classes = _filteredClasses[index];
                             final isSelected = classes == _selectedClass;
                         
-                        return ListTile(
-                          title: Text(
-                            classes,
-                            style: TextStyle(
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                              color: isSelected ? const Color(0xFF2563EB) : theme.textTheme.bodyLarge?.color,
-                            ),
-                          ),
-                          trailing: isSelected
-                              ? const                                   FaIcon(
-                                  FontAwesomeIcons.check,
-                                  color: Color(0xFF2563EB),
-                                )
-                              : null,
-                          onTap: () {
-                            setState(() {
-                              _selectedClass = classes;
-                            });
-                            _searchController.clear();
-                            _filterClasses('');
-                            Navigator.pop(context);
+                            return ListTile(
+                              title: Text(
+                                classes,
+                                style: TextStyle(
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                  color: isSelected ? const Color(0xFF2563EB) : theme.textTheme.bodyLarge?.color,
+                                ),
+                              ),
+                              trailing: isSelected
+                                  ? const FaIcon(FontAwesomeIcons.check, color: Color(0xFF2563EB))
+                                  : null,
+                              onTap: () {
+                                setState(() => _selectedClass = classes);
+                                _searchController.clear();
+                                _filterClasses('');
+                                Navigator.pop(context);
+                              },
+                            );
                           },
-                        );
-                      },
-                    ),
+                        ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // Location permission and retrieval functions
+  Future<void> _requestLocationPermission() async {
+    debugPrint('AccountInfo: Requesting location permission');
+    
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Konum servisleri kapalı. Lütfen cihaz ayarlarından açın.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Konum izni reddedildi'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Konum izni kalıcı olarak reddedildi. Ayarlardan izin veriniz.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      setState(() => _locationPermissionGranted = true);
+      await _getCurrentLocation();
+    } catch (e) {
+      debugPrint('AccountInfo: Error requesting location permission: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Konum izni alınırken hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    debugPrint('AccountInfo: Getting current location');
+    
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      
+      final addresses = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+      
+      String address = '';
+      if (addresses.isNotEmpty) {
+        final place = addresses.first;
+        address = '${place.street ?? ''}, ${place.subLocality ?? ''}, ${place.locality ?? ''}, ${place.country ?? ''}'.replaceAll(RegExp(r'^,\s*|,\s*,'), ',').trim();
+      }
+
+      setState(() {
+        _selectedLocation = LatLng(position.latitude, position.longitude);
+        _selectedAddress = address;
+      });
+
+      if (_mapController != null) {
+        _mapController!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: _selectedLocation!,
+              zoom: 15,
+            ),
+          ),
+        );
+      }
+
+      debugPrint('AccountInfo: Current location: ${position.latitude}, ${position.longitude}');
+    } catch (e) {
+      debugPrint('AccountInfo: Error getting current location: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Konum alınırken hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _updateAddressFromLocation(LatLng location) async {
+    try {
+      final addresses = await placemarkFromCoordinates(
+        location.latitude,
+        location.longitude,
+      );
+      
+      if (addresses.isNotEmpty) {
+        final place = addresses.first;
+        setState(() {
+          _selectedAddress = '${place.street ?? ''}, ${place.subLocality ?? ''}, ${place.locality ?? ''}, ${place.country ?? ''}'.replaceAll(RegExp(r'^,\s*|,\s*,'), ',').trim();
+        });
+      }
+    } catch (e) {
+      debugPrint('AccountInfo: Error getting address: $e');
+    }
+  }
+
+  void _showLocationBottomSheet() {
+    final theme = Theme.of(context);
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Row(
+                  children: [
+                    Text(
+                      'Konum Seçin',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: theme.textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const FaIcon(FontAwesomeIcons.xmark),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(),
+              
+              // Permission info or current location button
+              if (!_locationPermissionGranted)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const FaIcon(
+                              FontAwesomeIcons.locationDot,
+                              color: Color(0xFF2563EB),
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Konumunuzu paylaşmak için izin vermeniz gerekiyor',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: theme.textTheme.bodyLarge?.color,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            await _requestLocationPermission();
+                            setModalState(() {});
+                          },
+                          icon: const FaIcon(FontAwesomeIcons.locationArrow, size: 16),
+                          label: const Text('Konum İzni Ver'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2563EB),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+              // Map
+              Expanded(
+                child: Stack(
+                  children: [
+                    GoogleMap(
+                      initialCameraPosition: CameraPosition(
+                        target: _selectedLocation ?? const LatLng(41.0082, 28.9784), // Istanbul default
+                        zoom: 11,
+                      ),
+                      onMapCreated: (controller) {
+                        _mapController = controller;
+                        if (_selectedLocation != null) {
+                          controller.animateCamera(
+                            CameraUpdate.newCameraPosition(
+                              CameraPosition(
+                                target: _selectedLocation!,
+                                zoom: 15,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      onTap: (LatLng location) async {
+                        debugPrint('AccountInfo: Map tapped at Lat: ${location.latitude}, Lng: ${location.longitude}');
+                        setModalState(() {
+                          _selectedLocation = location;
+                        });
+                        setState(() {
+                          _selectedLocation = location;
+                        });
+                        await _updateAddressFromLocation(location);
+                        debugPrint('AccountInfo: Address updated to: $_selectedAddress');
+                        setModalState(() {});
+                      },
+                      markers: _selectedLocation != null
+                          ? {
+                              Marker(
+                                markerId: const MarkerId('selected_location'),
+                                position: _selectedLocation!,
+                                draggable: true,
+                                onDragEnd: (LatLng newLocation) async {
+                                  debugPrint('AccountInfo: Marker dragged to Lat: ${newLocation.latitude}, Lng: ${newLocation.longitude}');
+                                  setModalState(() {
+                                    _selectedLocation = newLocation;
+                                  });
+                                  setState(() {
+                                    _selectedLocation = newLocation;
+                                  });
+                                  await _updateAddressFromLocation(newLocation);
+                                  debugPrint('AccountInfo: Address updated to: $_selectedAddress');
+                                  setModalState(() {});
+                                },
+                              ),
+                            }
+                          : {},
+                      myLocationEnabled: _locationPermissionGranted,
+                      myLocationButtonEnabled: false,
+                      zoomControlsEnabled: false,
+                    ),
+                    
+                    // My location button
+                    if (_locationPermissionGranted)
+                      Positioned(
+                        bottom: 100,
+                        right: 16,
+                        child: FloatingActionButton(
+                          onPressed: () async {
+                            await _getCurrentLocation();
+                            setModalState(() {});
+                          },
+                          backgroundColor: Colors.white,
+                          child: const FaIcon(
+                            FontAwesomeIcons.locationCrosshairs,
+                            color: Color(0xFF2563EB),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              
+              // Selected address display
+              if (_selectedAddress.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: theme.cardColor,
+                    border: Border(
+                      top: BorderSide(color: Colors.grey[300]!),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const FaIcon(
+                            FontAwesomeIcons.locationDot,
+                            color: Color(0xFF2563EB),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Seçilen Konum',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: theme.textTheme.bodyLarge?.color,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _selectedAddress,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              
+              // Confirm button
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    if (_selectedLocation != null)
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _selectedLocation = null;
+                              _selectedAddress = '';
+                            });
+                            setModalState(() {});
+                          },
+                          icon: const FaIcon(FontAwesomeIcons.trash, size: 16),
+                          label: const Text('Konumu Kaldır'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red,
+                            side: const BorderSide(color: Colors.red),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (_selectedLocation != null) const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _selectedLocation != null
+                            ? () {
+                                debugPrint('AccountInfo: Location confirmed - Lat: ${_selectedLocation!.latitude}, Lng: ${_selectedLocation!.longitude}, Address: $_selectedAddress');
+                                Navigator.pop(context);
+                              }
+                            : null,
+                        icon: const FaIcon(FontAwesomeIcons.check, size: 16),
+                        label: const Text('Onayla'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -836,32 +1184,25 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Image or placeholder
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: _selectedProfileImages[index] != null
-                  ? Image.file(
-                      _selectedProfileImages[index]!,
-                      fit: BoxFit.cover,
-                    )
+                  ? Image.file(_selectedProfileImages[index]!, fit: BoxFit.cover)
                   : _profileImageUrls[index] != null
                       ? Image.network(
                           _profileImageUrls[index]!,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return _buildPlaceholder(index, isDark);
-                          },
+                          errorBuilder: (context, error, stackTrace) => _buildPlaceholder(index, isDark),
                         )
                       : _buildPlaceholder(index, isDark),
             ),
             
-            // Delete button overlay
             if (hasImage)
               Positioned(
                 top: 4,
                 right: 4,
                 child: GestureDetector(
-                  onTap: () async {
+                  onTap: () {
                     setState(() {
                       _selectedProfileImages[index] = null;
                       _profileImageUrls[index] = null;
@@ -879,11 +1220,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 16,
-                    ),
+                    child: const FaIcon(FontAwesomeIcons.trash, color: Colors.white, size: 16),
                   ),
                 ),
               ),
@@ -974,7 +1311,6 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
   Future<void> _uploadImages() async {
     debugPrint('AccountInfo: Starting image upload');
     
-    // .env dosyasından Cloudinary bilgilerini al
     final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'];
     final uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET']; 
 
@@ -993,7 +1329,6 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
     try {
       final cloudinary = CloudinaryPublic(cloudName, uploadPreset, cache: false);
 
-      // Upload profile images
       for (int i = 0; i < _selectedProfileImages.length; i++) {
         if (_selectedProfileImages[i] != null) {
           debugPrint('AccountInfo: Uploading profile image $i');
@@ -1005,7 +1340,6 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
         }
       }
 
-      // Upload cover image
       if (_selectedCoverImage != null) {
         debugPrint('AccountInfo: Uploading cover image');
         final resCover = await cloudinary.uploadFile(
@@ -1033,14 +1367,11 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
           ),
         );
       }
-      return null;
     }
   }
 
   Future<void> _saveProfile() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     if (_selectedUniversity.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1052,19 +1383,28 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
       return;
     }
 
-    setState(() {
-      _isSaving = true;
-    });
+    setState(() => _isSaving = true);
 
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         await _uploadImages();
 
-        // Filter out null values from profile images
         final profileImagesList = _profileImageUrls.where((url) => url != null).toList();
         
         debugPrint('AccountInfo: Saving profile with ${profileImagesList.length} images');
+
+        Map<String, dynamic>? locationData;
+        if (_selectedLocation != null) {
+          locationData = {
+            'latitude': _selectedLocation!.latitude,
+            'longitude': _selectedLocation!.longitude,
+            'address': _selectedAddress,
+          };
+          debugPrint('AccountInfo: Location data to save: $locationData');
+        } else {
+          debugPrint('AccountInfo: No location data to save (_selectedLocation is null)');
+        }
 
         await FirebaseFirestore.instance
             .collection('users')
@@ -1082,8 +1422,11 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
           'email': user.email,
           'profileImages': profileImagesList,
           'coverImageUrl': _coverImageUrl,
+          'location': locationData,
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
+
+        debugPrint('AccountInfo: Profile saved successfully with location: $locationData');
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1106,9 +1449,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
+        setState(() => _isSaving = false);
       }
     }
   }
@@ -1148,7 +1489,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header with Cover Image and Profile Photo
+                    // Cover Image Section
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -1156,11 +1497,9 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                       ),
                       child: Column(
                         children: [
-                          // Cover image area
                           Stack(
                             clipBehavior: Clip.none,
                             children: [
-                              // Cover Image
                               GestureDetector(
                                 onTap: _pickCoverImage,
                                 child: Container(
@@ -1223,7 +1562,6 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                             )),
                                 ),
                               ),
-                              // Camera icon for cover
                               if (_selectedCoverImage == null && _coverImageUrl == null)
                                 Positioned(
                                   top: 12,
@@ -1244,13 +1582,13 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          // Image action buttons
+                          
+                          // Cover photo buttons
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Cover photo buttons
                                 Row(
                                   children: [
                                     Expanded(
@@ -1259,7 +1597,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                         icon: const FaIcon(FontAwesomeIcons.camera, size: 16),
                                         label: const Text('Kapak Değiştir'),
                                         style: OutlinedButton.styleFrom(
-                                         backgroundColor: const Color(0xFF2563EB),
+                                          backgroundColor: const Color(0xFF2563EB),
                                           foregroundColor: Colors.white,
                                           side: const BorderSide(color: Color(0xFF2563EB)),
                                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1343,9 +1681,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                           childAspectRatio: 1,
                                         ),
                                         itemCount: 4,
-                                        itemBuilder: (context, index) {
-                                          return _buildProfileImageSlot(index, isDark);
-                                        },
+                                        itemBuilder: (context, index) => _buildProfileImageSlot(index, isDark),
                                       ),
                                     ],
                                   ),
@@ -1362,6 +1698,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                     
                     // Form fields
                     _buildFormField(
+                      context: context,
                       controller: _firstNameController,
                       label: 'Ad',
                       hint: 'Adınızı giriniz',
@@ -1377,6 +1714,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                     const SizedBox(height: 20),
                     
                     _buildFormField(
+                      context: context,
                       controller: _lastNameController,
                       label: 'Soyad',
                       hint: 'Soyadınızı giriniz',
@@ -1415,9 +1753,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                           },
                         );
                         if (picked != null && mounted) {
-                          setState(() {
-                            _birthDate = picked;
-                          });
+                          setState(() => _birthDate = picked);
                         }
                       },
                       child: Container(
@@ -1439,10 +1775,12 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                 color: const Color(0xFF2563EB).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const FaIcon(
-                                FontAwesomeIcons.cakeCandles,
-                                color: Color(0xFF2563EB),
-                                size: 18,
+                              child: const Center(
+                                child: FaIcon(
+                                  FontAwesomeIcons.cakeCandles,
+                                  color: Color(0xFF2563EB),
+                                  size: 18,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 15),
@@ -1474,9 +1812,9 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                                 ],
                               ),
                             ),
-                            FaIcon(
+                            const FaIcon(
                               FontAwesomeIcons.calendar,
-                              color: const Color(0xFF2563EB),
+                              color: Color(0xFF2563EB),
                               size: 18,
                             ),
                           ],
@@ -1487,206 +1825,53 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                     const SizedBox(height: 20),
                     
                     // University selection
-                    Text(
-                      'Üniversite',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: theme.textTheme.bodyLarge?.color,
-                      ),
-                    ),
+                    _buildSectionTitle('Üniversite', theme),
                     const SizedBox(height: 8),
-                    GestureDetector(
+                    _buildSelectionField(
+                      icon: FontAwesomeIcons.graduationCap,
+                      text: _selectedUniversity.isEmpty ? 'Üniversitenizi seçiniz' : _selectedUniversity,
+                      isEmpty: _selectedUniversity.isEmpty,
                       onTap: _showUniversityBottomSheet,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Theme.of(context).brightness == Brightness.dark
-                                ? const Color(0xFF2D2D2D)
-                                : const Color(0xFFE5E7EB),
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                          color: Theme.of(context).cardColor,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        child: Row(
-                          children: [
-                            FaIcon(
-                              FontAwesomeIcons.graduationCap,
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[600]
-                                  : const Color(0xFF9CA3AF),
-                              size: 18,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                _selectedUniversity.isEmpty 
-                                    ? 'Üniversitenizi seçiniz'
-                                    : _selectedUniversity,
-                                style: TextStyle(
-                                  color: _selectedUniversity.isEmpty 
-                                      ? (Theme.of(context).brightness == Brightness.dark
-                                          ? Colors.grey[600]
-                                          : const Color(0xFF9CA3AF))
-                                      : theme.textTheme.bodyLarge?.color,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                            FaIcon(
-                              FontAwesomeIcons.chevronDown,
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[600]
-                                  : const Color(0xFF9CA3AF),
-                              size: 18,
-                            ),
-                          ],
-                        ),
-                      ),
+                      theme: theme,
                     ),
                     
                     const SizedBox(height: 20),
                     
                     // Department selection
-                    Text(
-                      'Bölüm',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: theme.textTheme.bodyLarge?.color,
-                      ),
-                    ),
+                    _buildSectionTitle('Bölüm', theme),
                     const SizedBox(height: 8),
-                    GestureDetector(
+                    _buildSelectionField(
+                      icon: FontAwesomeIcons.book,
+                      text: _selectedDepartment.isEmpty ? 'Bölümünüzü seçiniz' : _selectedDepartment,
+                      isEmpty: _selectedDepartment.isEmpty,
                       onTap: _showDepartmentBottomSheet,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Theme.of(context).brightness == Brightness.dark
-                                ? const Color(0xFF2D2D2D)
-                                : const Color(0xFFE5E7EB),
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                          color: Theme.of(context).cardColor,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.book_outlined,
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[600]
-                                  : const Color(0xFF9CA3AF),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                _selectedDepartment.isEmpty 
-                                    ? 'Bölümünüzü seçiniz'
-                                    : _selectedDepartment,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: _selectedDepartment.isEmpty 
-                                      ? (Theme.of(context).brightness == Brightness.dark
-                                          ? Colors.grey[600]
-                                          : const Color(0xFF9CA3AF))
-                                      : theme.textTheme.bodyLarge?.color,
-                                ),
-                              ),
-                            ),
-                            FaIcon(
-                              FontAwesomeIcons.chevronDown,
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[600]
-                                  : const Color(0xFF9CA3AF),
-                              size: 18,
-                            ),
-                          ],
-                        ),
-                      ),
+                      theme: theme,
                     ),
                     
                     const SizedBox(height: 20),
                     
                     // Class selection
-                    Text(
-                      'Sınıf',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: theme.textTheme.bodyLarge?.color,
-                      ),
-                    ),
+                    _buildSectionTitle('Sınıf', theme),
                     const SizedBox(height: 8),
-                    GestureDetector(
+                    _buildSelectionField(
+                      icon: FontAwesomeIcons.award,
+                      text: _selectedClass.isEmpty ? 'Sınıfınızı seçiniz' : _selectedClass,
+                      isEmpty: _selectedClass.isEmpty,
                       onTap: _showClassBottomSheet,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Theme.of(context).brightness == Brightness.dark
-                                ? const Color(0xFF2D2D2D)
-                                : const Color(0xFFE5E7EB),
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                          color: Theme.of(context).cardColor,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.grade_outlined,
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[600]
-                                  : const Color(0xFF9CA3AF),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                _selectedClass.isEmpty 
-                                    ? 'Sınıfınızı seçiniz'
-                                    : _selectedClass,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: _selectedClass.isEmpty 
-                                      ? (Theme.of(context).brightness == Brightness.dark
-                                          ? Colors.grey[600]
-                                          : const Color(0xFF9CA3AF))
-                                      : theme.textTheme.bodyLarge?.color,
-                                ),
-                              ),
-                            ),
-                            FaIcon(
-                              FontAwesomeIcons.chevronDown,
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[600]
-                                  : const Color(0xFF9CA3AF),
-                              size: 18,
-                            ),
-                          ],
-                        ),
-                      ),
+                      theme: theme,
                     ),
                     
                     const SizedBox(height: 20),
                     
                     // Bio field
-                    Text(
-                      'Kısa Bio',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: theme.textTheme.bodyLarge?.color,
-                      ),
-                    ),
+                    _buildSectionTitle('Kısa Bio', theme),
                     const SizedBox(height: 8),
                     _buildFormField(
+                      context: context,
                       controller: _bioController,
                       label: '',
                       hint: 'Kendinizi kısaca tanıtın (140-200 karakter)',
-                      icon: Icons.edit_note_outlined,
+                      icon: FontAwesomeIcons.penToSquare,
                       maxLines: 3,
                       maxLength: 200,
                       validator: (value) {
@@ -1700,20 +1885,14 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                     const SizedBox(height: 20),
                     
                     // Interest Tags
-                    Text(
-                      'İlgi Alanları',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: theme.textTheme.bodyLarge?.color,
-                      ),
-                    ),
+                    _buildSectionTitle('İlgi Alanları', theme),
                     const SizedBox(height: 8),
                     _buildFormField(
+                      context: context,
                       controller: _interestTagsController,
                       label: '',
                       hint: 'İlgi alanlarınızı virgülle ayırın (örn: koşu, sinema, müzik)',
-                      icon: Icons.tag_outlined,
+                      icon: FontAwesomeIcons.tag,
                       onChanged: (value) {
                         if (value.isNotEmpty) {
                           _interestTags = value.split(',').map((tag) => tag.trim()).where((tag) => tag.isNotEmpty).toList();
@@ -1726,41 +1905,37 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                     const SizedBox(height: 20),
                     
                     // Active Hours
-                    Text(
-                      'Aktif Zamanlar',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: theme.textTheme.bodyLarge?.color,
-                      ),
-                    ),
+                    _buildSectionTitle('Aktif Zamanlar', theme),
                     const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
-                          child: _buildTimeSelector(
-                            'Başlangıç',
-                            _activeHours['start']!,
-                            (time) {
-                              setState(() {
-                                _activeHours['start'] = time;
-                              });
-                            },
-                          ),
+                          child: _buildTimeSelector('Başlangıç', _activeHours['start']!, (time) {
+                            setState(() => _activeHours['start'] = time);
+                          }),
                         ),
                         const SizedBox(width: 15),
                         Expanded(
-                          child: _buildTimeSelector(
-                            'Bitiş',
-                            _activeHours['end']!,
-                            (time) {
-                              setState(() {
-                                _activeHours['end'] = time;
-                              });
-                            },
-                          ),
+                          child: _buildTimeSelector('Bitiş', _activeHours['end']!, (time) {
+                            setState(() => _activeHours['end'] = time);
+                          }),
                         ),
                       ],
+                    ),
+                    
+                    const SizedBox(height: 20),
+                    
+                    // Location Section
+                    _buildSectionTitle('Konum', theme),
+                    const SizedBox(height: 8),
+                    _buildSelectionField(
+                      icon: FontAwesomeIcons.locationDot,
+                      text: _selectedLocation != null 
+                          ? (_selectedAddress.isNotEmpty ? _selectedAddress : 'Konum seçildi')
+                          : 'Konumunuzu seçiniz (İsteğe bağlı)',
+                      isEmpty: _selectedLocation == null,
+                      onTap: _showLocationBottomSheet,
+                      theme: theme,
                     ),
                     
                     const SizedBox(height: 40),
@@ -1775,7 +1950,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: _isSaving
@@ -1805,7 +1980,69 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
     );
   }
 
+  Widget _buildSectionTitle(String title, ThemeData theme) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: theme.textTheme.bodyLarge?.color,
+      ),
+    );
+  }
+
+  Widget _buildSelectionField({
+    required IconData icon,
+    required String text,
+    required bool isEmpty,
+    required VoidCallback onTap,
+    required ThemeData theme,
+  }) {
+    final isDark = theme.brightness == Brightness.dark;
+    
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+          ),
+          borderRadius: BorderRadius.circular(12),
+          color: theme.cardColor,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Row(
+          children: [
+            FaIcon(
+              icon,
+              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
+              size: 18,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: isEmpty 
+                      ? (isDark ? Colors.grey[600] : const Color(0xFF9CA3AF))
+                      : theme.textTheme.bodyLarge?.color,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+            FaIcon(
+              FontAwesomeIcons.chevronDown,
+              color: isDark ? Colors.grey[600] : const Color(0xFF9CA3AF),
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildFormField({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     required String hint,
@@ -1817,60 +2054,86 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
     int? maxLength,
     void Function(String)? onChanged,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (label.isNotEmpty) ...[
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? const Color(0xFF2D2D2D)
-                  : const Color(0xFFE5E7EB),
-            ),
-            borderRadius: BorderRadius.circular(8),
-            color: Theme.of(context).cardColor,
-          ),
-          child: TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            validator: validator,
-            readOnly: readOnly,
-            maxLines: maxLines,
-            maxLength: maxLength,
-            onChanged: onChanged,
-            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[600]
-                    : const Color(0xFF9CA3AF),
-                fontSize: 16,
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      validator: validator,
+      readOnly: readOnly,
+      maxLines: maxLines,
+      maxLength: maxLength,
+      onChanged: onChanged,
+      style: TextStyle(
+        fontSize: 15,
+        color: isDark ? Colors.white : Colors.black87,
+      ),
+      decoration: InputDecoration(
+        labelText: label.isNotEmpty ? label : null,
+        hintText: hint,
+        labelStyle: TextStyle(
+          color: isDark ? Colors.grey[400] : Colors.grey[600],
+        ),
+        hintStyle: TextStyle(
+          color: isDark ? Colors.grey[600] : Colors.grey[400],
+          fontSize: 14,
+        ),
+        prefixIcon: maxLines > 1
+            ? Padding(
+                padding: const EdgeInsets.only(top: 12, left: 12, right: 8),
+                child: FaIcon(
+                  icon,
+                  size: 18,
+                  color: isDark ? Colors.grey[500] : Colors.grey[600],
+                ),
+              )
+            : Center(
+                widthFactor: 1.0,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: FaIcon(
+                    icon,
+                    size: 18,
+                    color: isDark ? Colors.grey[500] : Colors.grey[600],
+                  ),
+                ),
               ),
-              prefixIcon: FaIcon(
-                icon,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[600]
-                    : const Color(0xFF9CA3AF),
-                size: 18,
-              ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: maxLines > 1 ? 14 : 16,
+        ),
+        filled: true,
+        fillColor: isDark ? const Color(0xFF1F1F1F) : Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
           ),
         ),
-      ],
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
+        ),
+        counterStyle: TextStyle(
+          color: isDark ? Colors.grey[500] : Colors.grey[600],
+          fontSize: 12,
+        ),
+      ),
     );
   }
 
@@ -1883,6 +2146,19 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
         final TimeOfDay? picked = await showTimePicker(
           context: context,
           initialTime: TimeOfDay.fromDateTime(DateTime.parse('2023-01-01 $time:00')),
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: ColorScheme.light(
+                  primary: const Color(0xFF2563EB),
+                  onPrimary: Colors.white,
+                  surface: theme.cardColor,
+                  onSurface: theme.textTheme.bodyLarge?.color ?? Colors.black,
+                ),
+              ),
+              child: child!,
+            );
+          },
         );
         if (picked != null) {
           final formattedTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
@@ -1894,7 +2170,7 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
           border: Border.all(
             color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE5E7EB),
           ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           color: theme.cardColor,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -1934,4 +2210,3 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
     );
   }
 }
-
