@@ -4,9 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../home/home_page.dart';
-import '../profile/profile_page.dart';
-import '../friends/friends_page.dart';
+import "package:unihub/home/home_page.dart";
+import 'package:unihub/profile/profile_page.dart';
+import 'package:unihub/friends/friends_page.dart';
 
 class CustomBottomNavigation extends StatefulWidget {
   final int currentIndex;

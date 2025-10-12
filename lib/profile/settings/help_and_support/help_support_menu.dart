@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'blocked_users/blocked_users.dart';
-import 'privacy_settings/privacy_settings.dart'; 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'faq/faq_page.dart';
+import 'support_request/support_request_page.dart';
 
-class SecurityPrivacyMenuPage extends StatelessWidget {
-  const SecurityPrivacyMenuPage({super.key});
+class HelpSupportMenuPage extends StatelessWidget {
+  const HelpSupportMenuPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class SecurityPrivacyMenuPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Güvenlik & Gizlilik'),
+        title: const Text('Yardım & Destek'),
         backgroundColor: theme.appBarTheme.backgroundColor,
         foregroundColor: theme.appBarTheme.foregroundColor,
         elevation: 0,
@@ -26,7 +26,7 @@ class SecurityPrivacyMenuPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Security options container
+            // Help options container
             Container(
               decoration: BoxDecoration(
                 color: theme.cardColor,
@@ -41,31 +41,31 @@ class SecurityPrivacyMenuPage extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _buildSecurityOption(
+                  _buildHelpOption(
                     context,
-                    'Engellenen Kullanıcılar',
-                    'Engellediğiniz kullanıcıları görüntüleyin ve yönetin',
-                    FontAwesomeIcons.ban,
+                    'Sık Sorulan Sorular',
+                    'Sıkça sorulan soruları ve cevaplarını görüntüleyin',
+                    FontAwesomeIcons.circleQuestion,
                     () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const BlockedUsersPage(),
+                          builder: (context) => const FAQPage(),
                         ),
                       );
                     },
                   ),
                   _buildDivider(context),
-                  _buildSecurityOption(
+                  _buildHelpOption(
                     context,
-                    'Gizlilik Ayarları',
-                    'Görünürlük, mesaj ve profil gizliliği ayarları',
-                    FontAwesomeIcons.userSecret,  
+                    'Yardım Talebi Oluştur',
+                    'Sorun bildirin veya destek ekibimize ulaşın',
+                    FontAwesomeIcons.headset,
                     () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const PrivacySettingsPage(),
+                          builder: (context) => const SupportRequestPage(),
                         ),
                       );
                     },
@@ -79,7 +79,7 @@ class SecurityPrivacyMenuPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSecurityOption(
+  Widget _buildHelpOption(
     BuildContext context,
     String title,
     String subtitle,

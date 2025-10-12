@@ -1476,6 +1476,11 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Hesap Bilgileri'),
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        foregroundColor: theme.appBarTheme.foregroundColor,
+        elevation: 0,
+        automaticallyImplyLeading: true,
+        centerTitle: true,
       ),
       body: _isLoading
           ? const Center(

@@ -128,9 +128,6 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Arkadaşlar'),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(FontAwesomeIcons.userPlus),
@@ -157,7 +154,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                     index: 1,
                     isDark: isDark,
                   ),
-                ),
+                ), // Sağ boşluk
               ],
             ),
           ),

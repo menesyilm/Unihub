@@ -110,6 +110,11 @@ class _BlockedUsersPageState extends State<BlockedUsersPage> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Engellenen Kullanıcılar'),
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        foregroundColor: theme.appBarTheme.foregroundColor,
+        elevation: 0,
+        automaticallyImplyLeading: true,
+        centerTitle: true,
       ),
       body: isLoading
           ? const Center(
