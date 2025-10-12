@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../account_transactions/account_menu.dart';
-import '../security_privacy/security_privacy_menu.dart';
-import '../theme/theme_settings.dart';
-import '../social_media/social_media_menu.dart';
+import 'account_transactions/account_menu.dart';
+import 'security_privacy/security_privacy_menu.dart';
+import 'theme/theme_settings.dart';
+import 'social_media/social_media_menu.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});

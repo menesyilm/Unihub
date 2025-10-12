@@ -109,10 +109,16 @@ class _SocialMediaMenuPageState extends State<SocialMediaMenuPage> {
               hintStyle: TextStyle(
                 color: isDark ? Colors.grey[500] : Colors.grey[400],
               ),
-              prefixIcon: FaIcon(
-                FontAwesomeIcons.user,
-                color: const Color(0xFF2563EB),
-                size: 18,
+              prefixIcon: Center(
+                widthFactor: 1.0,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: FaIcon(
+                    FontAwesomeIcons.user,
+                    color: const Color(0xFF2563EB),
+                    size: 18,
+                  ),
+                ),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -175,10 +181,8 @@ class _SocialMediaMenuPageState extends State<SocialMediaMenuPage> {
     if (result != null && user != null) {
       try {
         if (result == 'DELETE') {
-          // Kaldır
           socialMedias.remove(key);
         } else if (result.isNotEmpty) {
-          // Ekle veya güncelle
           socialMedias[key] = result;
         }
 
@@ -231,7 +235,11 @@ class _SocialMediaMenuPageState extends State<SocialMediaMenuPage> {
         centerTitle: true,
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+              ),
+            )
           : SafeArea(
               child: SingleChildScrollView(
                 child: Padding(
@@ -252,7 +260,8 @@ class _SocialMediaMenuPageState extends State<SocialMediaMenuPage> {
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              width: 36,
+                              height: 36,
                               decoration: BoxDecoration(
                                 color: const Color(0xFF2563EB),
                                 borderRadius: BorderRadius.circular(8),
@@ -272,6 +281,7 @@ class _SocialMediaMenuPageState extends State<SocialMediaMenuPage> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: isDark ? Colors.grey[300] : const Color(0xFF2D3748),
+                                  height: 1.3,
                                 ),
                               ),
                             ),
@@ -280,84 +290,34 @@ class _SocialMediaMenuPageState extends State<SocialMediaMenuPage> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Social Media List
-                      ...platforms.map((platform) {
-                        final key = platform['key'] as String;
-                        final name = platform['name'] as String;
-                        final icon = platform['icon'] as IconData;
-                        final color = platform['color'] as Color;
-                        final username = socialMedias[key]?.toString() ?? '';
-                        final hasUsername = username.isNotEmpty;
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: theme.cardColor,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isDark 
-                                  ? Colors.grey[800]! 
-                                  : Colors.grey[200]!,
+                      // Social Media List Container
+                      Container(
+                        decoration: BoxDecoration(
+                          color: theme.cardColor,
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(
-                                  alpha: isDark ? 0.2 : 0.03,
-                                ),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            for (int i = 0; i < platforms.length; i++) ...[
+                              _buildSocialMediaOption(
+                                platforms[i]['name'] as String,
+                                platforms[i]['key'] as String,
+                                platforms[i]['icon'] as IconData,
+                                platforms[i]['color'] as Color,
                               ),
+                              if (i < platforms.length - 1)
+                                _buildDivider(),
                             ],
-                          ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            leading: Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: color.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                icon,
-                                color: color,
-                                size: 24,
-                              ),
-                            ),
-                            title: Text(
-                              name,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: theme.textTheme.bodyLarge?.color,
-                              ),
-                            ),
-                            subtitle: Text(
-                              hasUsername ? username : 'Ekle',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: hasUsername
-                                    ? (isDark ? Colors.grey[400] : Colors.grey[600])
-                                    : Colors.grey[500],
-                                fontStyle: hasUsername 
-                                    ? FontStyle.normal 
-                                    : FontStyle.italic,
-                              ),
-                            ),
-                            trailing: IconButton(
-                              icon: FaIcon(
-                                hasUsername ? FontAwesomeIcons.pen : FontAwesomeIcons.circlePlus,
-                                color: const Color(0xFF2563EB),
-                                size: 22,
-                              ),
-                              onPressed: () => _addOrEditSocialMedia(name, key),
-                            ),
-                          ),
-                        );
-                      }),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -365,5 +325,103 @@ class _SocialMediaMenuPageState extends State<SocialMediaMenuPage> {
             ),
     );
   }
-}
 
+  Widget _buildSocialMediaOption(
+    String name,
+    String key,
+    IconData icon,
+    Color color,
+  ) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final username = socialMedias[key]?.toString() ?? '';
+    final hasUsername = username.isNotEmpty;
+
+    return InkWell(
+      onTap: () => _addOrEditSocialMedia(name, key),
+      borderRadius: BorderRadius.circular(15),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            // Icon container
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: FaIcon(
+                  icon,
+                  color: color,
+                  size: 22,
+                ),
+              ),
+            ),
+            const SizedBox(width: 15),
+            
+            // Text content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: theme.textTheme.bodyLarge?.color,
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    hasUsername ? '@$username' : 'Ekle',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: hasUsername
+                          ? (isDark ? Colors.grey[400] : Colors.grey[600])
+                          : Colors.grey[500],
+                      fontStyle: hasUsername 
+                          ? FontStyle.normal 
+                          : FontStyle.italic,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            
+            // Edit/Add icon
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: FaIcon(
+                  hasUsername ? FontAwesomeIcons.pen : FontAwesomeIcons.plus,
+                  color: const Color(0xFF2563EB),
+                  size: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      height: 1,
+      color: Theme.of(context).dividerColor,
+    );
+  }
+}
